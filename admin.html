@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phinn-Phang 後台管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#131110;color:#E8E0D6;font-family:'Noto Serif TC',serif;font-weight:300;font-size:14px;line-height:1.7;min-height:100vh}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(200,150,90,0.3);border-radius:2px}
+input,select,textarea{background:#1E1A16;border:1px solid rgba(200,150,90,0.25);color:#E8E0D6;font-family:inherit;font-size:13px;padding:9px 12px;width:100%;outline:none;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:rgba(200,150,90,0.6)}
+select option{background:#1E1A16}
+button{cursor:pointer;font-family:inherit}
+.btn{padding:8px 20px;border:1px solid rgba(200,150,90,0.4);background:transparent;color:#C8965A;font-size:13px;letter-spacing:.08em;transition:.2s}
+.btn:hover{background:rgba(200,150,90,0.12);border-color:#C8965A}
+.btn-danger{border-color:rgba(200,80,60,0.4);color:#C86050}.btn-danger:hover{background:rgba(200,80,60,0.12);border-color:#C86050}
+.btn-primary{background:rgba(200,150,90,0.15);border-color:#C8965A;color:#C8965A}
+.tag{display:inline-block;padding:2px 8px;border:1px solid;font-size:11px;letter-spacing:.05em}
+label{display:block;font-size:11px;letter-spacing:.12em;color:rgba(200,150,90,0.7);margin-bottom:5px}
+.field{margin-bottom:18px}
+h2{font-size:18px;font-weight:400;letter-spacing:.12em;color:#F0E8DE;margin-bottom:4px}
+h3{font-size:14px;font-weight:400;letter-spacing:.1em;color:rgba(200,150,90,0.8);margin-bottom:12px}
+.card{background:#1A1612;border:1px solid rgba(200,150,90,0.15);padding:20px}
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="app-data.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ── Login ──────────────────────────────────────────────────────────────────
+function Login({ onLogin }) {
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState('');
+  const submit = (e) => {
+    e.preventDefault();
+    const s = PP.getSettings();
+    if (pw === s.adminPassword) onLogin();
+    else setErr('密碼錯誤，請再試一次');
+  };
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'radial-gradient(ellipse at 50% 40%, #2A1A0E 0%, #131110 70%)'}}>
+      <div style={{width:340,padding:'40px 36px',background:'#1A1612',border:'1px solid rgba(200,150,90,0.2)'}}>
+        <div style={{textAlign:'center',marginBottom:32}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:13,fontStyle:'italic',letterSpacing:'.3em',color:'rgba(200,150,90,0.7)',marginBottom:8}}>Phinn-Phang</div>
+          <h2 style={{fontSize:16,letterSpacing:'.2em'}}>後台管理</h2>
+        </div>
+        <form onSubmit={submit}>
+          <div className="field">
+            <label>管理員密碼</label>
+            <input type="password" value={pw} onChange={e=>setPw(e.target.value)} autoFocus />
+          </div>
+          {err && <div style={{color:'#C86050',fontSize:12,marginBottom:12}}>{err}</div>}
+          <button type="submit" className="btn btn-primary" style={{width:'100%',padding:'11px'}}>登入</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Ingredient Editor ──────────────────────────────────────────────────────
+function IngredientRow({ ing, onChange, onDelete }) {
+  return (
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 130px 110px 36px',gap:6,marginBottom:6,alignItems:'center'}}>
+      <input placeholder="中文名稱" value={ing.name} onChange={e=>onChange({...ing,name:e.target.value})} />
+      <input placeholder="English" value={ing.nameEn} onChange={e=>onChange({...ing,nameEn:e.target.value})} />
+      <select value={ing.family} onChange={e=>onChange({...ing,family:e.target.value})}>
+        {PP.FAMILIES.map(f=><option key={f.id} value={f.id}>{f.zh}</option>)}
+      </select>
+      <select value={ing.layer} onChange={e=>onChange({...ing,layer:e.target.value})}>
+        <option value="top">前調</option>
+        <option value="middle">中調</option>
+        <option value="base">後調</option>
+      </select>
+      <button className="btn btn-danger" style={{padding:'8px 0',fontSize:14}} onClick={onDelete}>✕</button>
+    </div>
+  );
+}
+
+// ── Course Editor ──────────────────────────────────────────────────────────
+function CourseEditor({ course: init, onSave, onCancel, settings }) {
+  const blank = { id: PP.genId(), name: '', type: settings.courseTypes[0]||'', date: new Date().toISOString().slice(0,10), token: PP.genToken(), ingredients: [], bases: [], hasBase: false, aiNamePrompt: settings.defaultAiNamePrompt, aiDescPrompt: settings.defaultAiDescPrompt };
+  const [c, setC] = useState(init || blank);
+  const [newType, setNewType] = useState('');
+
+  const addIng = () => setC(p=>({...p, ingredients:[...p.ingredients,{id:PP.genId(),name:'',nameEn:'',family:'citrus',layer:'top'}]}));
+  const updateIng = (i,v) => setC(p=>({...p,ingredients:p.ingredients.map((x,j)=>j===i?v:x)}));
+  const removeIng = (i) => setC(p=>({...p,ingredients:p.ingredients.filter((_,j)=>j!==i)}));
+
+  const addBase = () => setC(p=>({...p,bases:[...p.bases,{id:PP.genId(),name:''}]}));
+  const updateBase = (i,v) => setC(p=>({...p,bases:p.bases.map((x,j)=>j===i?{...x,name:v}:x)}));
+  const removeBase = (i) => setC(p=>({...p,bases:p.bases.filter((_,j)=>j!==i)}));
+
+  const formulaUrl = `${window.location.origin}${window.location.pathname.replace('admin.html','formula.html')}?token=${c.token}`;
+
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:28}}>
+        <h2>{init?'編輯課程':'新增課程'}</h2>
+        <div style={{display:'flex',gap:8}}>
+          <button className="btn" onClick={onCancel}>取消</button>
+          <button className="btn btn-primary" onClick={()=>onSave(c)}>儲存課程</button>
+        </div>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,marginBottom:16}}>
+        <div className="field">
+          <label>課程名稱</label>
+          <input value={c.name} onChange={e=>setC(p=>({...p,name:e.target.value}))} placeholder="例：春季體驗課 2026/04" />
+        </div>
+        <div className="field">
+          <label>課程類型</label>
+          <div style={{display:'flex',gap:6}}>
+            <select value={c.type} onChange={e=>setC(p=>({...p,type:e.target.value}))} style={{flex:1}}>
+              {settings.courseTypes.map(t=><option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="field">
+          <label>課程日期</label>
+          <input type="date" value={c.date} onChange={e=>setC(p=>({...p,date:e.target.value}))} />
+        </div>
+        <div className="field">
+          <label>學員連結（Token）</label>
+          <div style={{display:'flex',gap:6}}>
+            <input value={formulaUrl} readOnly style={{flex:1,fontSize:11,color:'rgba(200,150,90,0.7)'}} onClick={e=>e.target.select()} />
+            <button className="btn" onClick={()=>{navigator.clipboard.writeText(formulaUrl)}} style={{whiteSpace:'nowrap',padding:'8px 12px'}}>複製</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Ingredients */}
+      <div className="card" style={{marginBottom:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+          <h3>香精清單（{c.ingredients.length} 種）</h3>
+          <button className="btn" onClick={addIng} style={{padding:'5px 14px',fontSize:12}}>+ 新增香精</button>
+        </div>
+        {c.ingredients.length === 0 && <div style={{color:'rgba(245,239,230,0.3)',fontSize:12,fontStyle:'italic'}}>尚未新增香精</div>}
+        <div style={{fontFamily:'monospace',fontSize:11,color:'rgba(200,150,90,0.4)',display:'grid',gridTemplateColumns:'1fr 1fr 130px 110px 36px',gap:6,marginBottom:6}}>
+          <span>中文名稱</span><span>English</span><span>香調</span><span>音符位置</span><span/>
+        </div>
+        {c.ingredients.map((ing,i)=>(
+          <IngredientRow key={ing.id} ing={ing} onChange={v=>updateIng(i,v)} onDelete={()=>removeIng(i)} />
+        ))}
+      </div>
+
+      {/* Bases */}
+      <div className="card" style={{marginBottom:16}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+          <h3>基底選項</h3>
+          <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',marginBottom:0}}>
+            <input type="checkbox" checked={c.hasBase} onChange={e=>setC(p=>({...p,hasBase:e.target.checked}))} style={{width:'auto'}} />
+            <span style={{fontSize:12,color:'rgba(200,150,90,0.7)'}}>此課程有基底</span>
+          </label>
+        </div>
+        {c.hasBase && (
+          <div>
+            {c.bases.map((b,i)=>(
+              <div key={b.id} style={{display:'flex',gap:6,marginBottom:6}}>
+                <input value={b.name} onChange={e=>updateBase(i,e.target.value)} placeholder="基底名稱（例：乳霜基底 / 酒精香水）" />
+                <button className="btn btn-danger" style={{padding:'8px 14px'}} onClick={()=>removeBase(i)}>✕</button>
+              </div>
+            ))}
+            <button className="btn" onClick={addBase} style={{padding:'5px 14px',fontSize:12}}>+ 新增基底</button>
+          </div>
+        )}
+        {!c.hasBase && <div style={{color:'rgba(245,239,230,0.3)',fontSize:12,fontStyle:'italic'}}>未啟用</div>}
+      </div>
+
+      {/* AI Prompts */}
+      <div className="card">
+        <h3>AI 指令設定</h3>
+        <div className="field">
+          <label>命名指令（AI 會生成 3 個名字供學員選擇）</label>
+          <textarea rows={4} value={c.aiNamePrompt} onChange={e=>setC(p=>({...p,aiNamePrompt:e.target.value}))} />
+        </div>
+        <div className="field" style={{marginBottom:0}}>
+          <label>作品介紹指令</label>
+          <textarea rows={4} value={c.aiDescPrompt} onChange={e=>setC(p=>({...p,aiDescPrompt:e.target.value}))} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Course List ────────────────────────────────────────────────────────────
+function CourseList({ courses, onCreate, onEdit, onCopy, onDelete, works }) {
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
+        <h2>課程管理</h2>
+        <button className="btn btn-primary" onClick={onCreate}>+ 新增課程</button>
+      </div>
+      {courses.length===0 && <div style={{color:'rgba(245,239,230,0.3)',textAlign:'center',padding:60,border:'1px dashed rgba(200,150,90,0.15)'}}>尚未建立任何課程。點擊「新增課程」開始。</div>}
+      {courses.map(c => {
+        const wCount = works.filter(w=>w.courseId===c.id).length;
+        const url = `${window.location.origin}${window.location.pathname.replace('admin.html','formula.html')}?token=${c.token}`;
+        return (
+          <div key={c.id} className="card" style={{marginBottom:10,display:'grid',gridTemplateColumns:'1fr auto',gap:16,alignItems:'start'}}>
+            <div>
+              <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
+                <span style={{fontSize:16,color:'#F0E8DE',letterSpacing:'.08em'}}>{c.name||'（未命名課程）'}</span>
+                <span className="tag" style={{borderColor:'rgba(200,150,90,0.3)',color:'rgba(200,150,90,0.7)'}}>{c.type}</span>
+                <span className="tag" style={{borderColor:'rgba(245,239,230,0.15)',color:'rgba(245,239,230,0.4)'}}>{c.ingredients.length} 種香精</span>
+                {c.hasBase && <span className="tag" style={{borderColor:'rgba(123,158,110,0.3)',color:'rgba(123,158,110,0.7)'}}>含基底</span>}
+              </div>
+              <div style={{fontSize:12,color:'rgba(245,239,230,0.35)',marginBottom:8}}>{c.date} · {wCount} 件作品</div>
+              <div style={{fontSize:11,color:'rgba(200,150,90,0.4)',fontFamily:'monospace',wordBreak:'break-all'}}>{url}</div>
+            </div>
+            <div style={{display:'flex',gap:6,flexShrink:0}}>
+              <button className="btn" style={{padding:'6px 12px',fontSize:12}} onClick={()=>onEdit(c)}>編輯</button>
+              <button className="btn" style={{padding:'6px 12px',fontSize:12}} onClick={()=>onCopy(c)}>複製</button>
+              <button className="btn btn-danger" style={{padding:'6px 12px',fontSize:12}} onClick={()=>onDelete(c.id)}>刪除</button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Works List ─────────────────────────────────────────────────────────────
+function WorksList({ works, courses }) {
+  const workUrl = (id) => `${window.location.origin}${window.location.pathname.replace('admin.html','work.html')}?id=${id}`;
+  return (
+    <div>
+      <h2 style={{marginBottom:24}}>作品紀錄</h2>
+      {works.length===0 && <div style={{color:'rgba(245,239,230,0.3)',textAlign:'center',padding:60,border:'1px dashed rgba(200,150,90,0.15)'}}>尚無作品記錄</div>}
+      <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+        <thead>
+          <tr style={{borderBottom:'1px solid rgba(200,150,90,0.2)'}}>
+            {['作品名稱','學員','課程','日期','連結'].map(h=>(
+              <th key={h} style={{textAlign:'left',padding:'8px 12px',color:'rgba(200,150,90,0.65)',fontWeight:300,fontSize:11,letterSpacing:'.1em'}}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {works.map(w=>(
+            <tr key={w.id} style={{borderBottom:'1px solid rgba(245,239,230,0.05)'}}>
+              <td style={{padding:'10px 12px',color:'#F0E8DE'}}>{w.workName}</td>
+              <td style={{padding:'10px 12px',color:'rgba(245,239,230,0.65)'}}>{w.studentName}</td>
+              <td style={{padding:'10px 12px',color:'rgba(245,239,230,0.4)',fontSize:12}}>{w.courseName}</td>
+              <td style={{padding:'10px 12px',color:'rgba(245,239,230,0.4)',fontSize:12}}>{w.courseDate}</td>
+              <td style={{padding:'10px 12px'}}>
+                <a href={workUrl(w.id)} target="_blank" style={{color:'rgba(200,150,90,0.7)',fontSize:11,fontFamily:'monospace'}}>開啟 →</a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ── Settings ───────────────────────────────────────────────────────────────
+function SettingsPage({ onSaved }) {
+  const [s, setS] = useState(PP.getSettings());
+  const [newType, setNewType] = useState('');
+  const [msg, setMsg] = useState('');
+
+  const save = () => { PP.saveSettings(s); setMsg('已儲存'); setTimeout(()=>setMsg(''),2500); };
+  const addType = () => { if(!newType.trim()) return; setS(p=>({...p,courseTypes:[...p.courseTypes,newType.trim()]})); setNewType(''); };
+  const removeType = (t) => setS(p=>({...p,courseTypes:p.courseTypes.filter(x=>x!==t)}));
+
+  return (
+    <div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:28}}>
+        <h2>系統設定</h2>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          {msg && <span style={{color:'rgba(123,158,110,0.9)',fontSize:12}}>{msg}</span>}
+          <button className="btn btn-primary" onClick={save}>儲存設定</button>
+        </div>
+      </div>
+
+      <div className="card" style={{marginBottom:16}}>
+        <h3>帳號安全</h3>
+        <div className="field" style={{marginBottom:0}}>
+          <label>管理員密碼</label>
+          <input type="password" value={s.adminPassword} onChange={e=>setS(p=>({...p,adminPassword:e.target.value}))} />
+        </div>
+      </div>
+
+      <div className="card" style={{marginBottom:16}}>
+        <h3>課程類型管理</h3>
+        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
+          {s.courseTypes.map(t=>(
+            <span key={t} style={{background:'rgba(200,150,90,0.1)',border:'1px solid rgba(200,150,90,0.25)',padding:'4px 10px',fontSize:12,display:'flex',alignItems:'center',gap:6}}>
+              {t}
+              <button onClick={()=>removeType(t)} style={{background:'none',border:'none',color:'rgba(200,80,60,0.6)',fontSize:13,lineHeight:1,padding:0}}>×</button>
+            </span>
+          ))}
+        </div>
+        <div style={{display:'flex',gap:6}}>
+          <input value={newType} onChange={e=>setNewType(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addType()} placeholder="新課程類型名稱" style={{maxWidth:260}} />
+          <button className="btn" onClick={addType}>新增</button>
+        </div>
+      </div>
+
+      <div className="card" style={{marginBottom:16}}>
+        <h3>Google Sheet 同步</h3>
+        <div className="field" style={{marginBottom:0}}>
+          <label>Apps Script Web App URL</label>
+          <input value={s.googleScriptUrl} onChange={e=>setS(p=>({...p,googleScriptUrl:e.target.value}))} placeholder="https://script.google.com/macros/s/..." />
+        </div>
+        <div style={{marginTop:10,fontSize:12,color:'rgba(245,239,230,0.3)',lineHeight:1.8}}>
+          需先在 Google Apps Script 建立 Web App，設定為「任何人均可存取」。<br/>
+          學員提交作品後系統將自動 POST 資料到此 URL。
+        </div>
+      </div>
+
+      <div className="card">
+        <h3>AI 預設指令</h3>
+        <div className="field">
+          <label>命名預設指令</label>
+          <textarea rows={4} value={s.defaultAiNamePrompt} onChange={e=>setS(p=>({...p,defaultAiNamePrompt:e.target.value}))} />
+        </div>
+        <div className="field" style={{marginBottom:0}}>
+          <label>介紹預設指令</label>
+          <textarea rows={4} value={s.defaultAiDescPrompt} onChange={e=>setS(p=>({...p,defaultAiDescPrompt:e.target.value}))} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Shell ──────────────────────────────────────────────────────────────────
+function Admin() {
+  const [authed, setAuthed] = useState(false);
+  const [view, setView] = useState('courses'); // courses | editor | works | settings
+  const [courses, setCourses] = useState([]);
+  const [works, setWorks] = useState([]);
+  const [editing, setEditing] = useState(null);
+
+  useEffect(() => {
+    setCourses(PP.getCourses());
+    setWorks(PP.getWorks());
+  }, []);
+
+  const refresh = () => { setCourses(PP.getCourses()); setWorks(PP.getWorks()); };
+
+  const handleSave = (c) => {
+    PP.saveCourse(c);
+    refresh();
+    setView('courses');
+  };
+  const handleCopy = (c) => {
+    const copy = { ...c, id: PP.genId(), token: PP.genToken(), name: c.name + '（複製）', createdAt: new Date().toISOString() };
+    PP.saveCourse(copy);
+    refresh();
+  };
+  const handleDelete = (id) => {
+    if (!confirm('確定要刪除此課程？相關作品不會被刪除。')) return;
+    PP.deleteCourse(id);
+    refresh();
+  };
+
+  if (!authed) return <Login onLogin={()=>setAuthed(true)} />;
+
+  const navItems = [
+    { key: 'courses', label: '課程管理' },
+    { key: 'works',   label: '作品紀錄' },
+    { key: 'settings',label: '系統設定' },
+  ];
+
+  const settings = PP.getSettings();
+
+  return (
+    <div style={{display:'flex',minHeight:'100vh'}}>
+      {/* Sidebar */}
+      <div style={{width:200,background:'#100E0C',borderRight:'1px solid rgba(200,150,90,0.12)',padding:'28px 0',flexShrink:0}}>
+        <div style={{padding:'0 20px',marginBottom:32}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:'italic',letterSpacing:'.25em',color:'rgba(200,150,90,0.6)'}}>Phinn-Phang</div>
+          <div style={{fontSize:13,color:'rgba(245,239,230,0.5)',letterSpacing:'.1em',marginTop:2}}>後台管理</div>
+        </div>
+        {navItems.map(n=>(
+          <button key={n.key} onClick={()=>{ setView(n.key); setEditing(null); }}
+            style={{display:'block',width:'100%',textAlign:'left',background:view===n.key?'rgba(200,150,90,0.1)':'transparent',border:'none',borderLeft:`2px solid ${view===n.key?'#C8965A':'transparent'}`,padding:'10px 20px',color:view===n.key?'#C8965A':'rgba(245,239,230,0.5)',fontSize:13,letterSpacing:'.08em',transition:'.2s'}}>
+            {n.label}
+          </button>
+        ))}
+        <div style={{position:'absolute',bottom:24,padding:'0 20px'}}>
+          <button className="btn btn-danger" style={{width:'100%',fontSize:12,padding:'7px'}} onClick={()=>setAuthed(false)}>登出</button>
+        </div>
+      </div>
+
+      {/* Main */}
+      <div style={{flex:1,padding:'36px 40px',overflowY:'auto'}}>
+        {view==='courses' && !editing && (
+          <CourseList courses={courses} works={works}
+            onCreate={()=>{setEditing(null);setView('editor')}}
+            onEdit={c=>{setEditing(c);setView('editor')}}
+            onCopy={handleCopy}
+            onDelete={handleDelete}
+          />
+        )}
+        {view==='editor' && (
+          <CourseEditor
+            course={editing}
+            settings={settings}
+            onSave={handleSave}
+            onCancel={()=>{setView('courses');setEditing(null)}}
+          />
+        )}
+        {view==='works' && <WorksList works={works} courses={courses} />}
+        {view==='settings' && <SettingsPage />}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Admin />);
+</script>
+</body>
+</html>

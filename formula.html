@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phinn-Phang 配方輸入</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,300&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#1A1210;color:#F0E8DE;font-family:'Noto Serif TC',serif;font-weight:300;line-height:1.75;min-height:100vh;-webkit-font-smoothing:antialiased}
+input,select{background:rgba(255,255,255,0.05);border:1px solid rgba(200,150,90,0.25);color:#F0E8DE;font-family:inherit;font-size:14px;padding:10px 14px;outline:none;transition:.25s;border-radius:0}
+input:focus,select:focus{border-color:rgba(200,150,90,0.6);background:rgba(200,150,90,0.06)}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+button{cursor:pointer;font-family:inherit}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fade-up{animation:fadeUp .6s ease both}
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="app-data.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const px = (v) => `${v}px`;
+const gold = '#C8965A';
+const coral = '#E8957A';
+
+// ── Shared UI ──────────────────────────────────────────────────────────────
+function GoldBtn({ children, onClick, disabled, style }) {
+  const [h, setH] = useState(false);
+  return (
+    <button disabled={disabled} onClick={onClick} onMouseOver={()=>setH(true)} onMouseOut={()=>setH(false)}
+      style={{ fontFamily:"'Noto Serif TC',serif", fontSize:14, letterSpacing:'.15em', padding:'13px 36px', background: h&&!disabled ? 'rgba(200,150,90,0.18)' : 'transparent', border:`1px solid ${disabled?'rgba(200,150,90,0.2)':h?'#C8965A':'rgba(200,150,90,0.5)'}`, color: disabled?'rgba(200,150,90,0.3)':h?'#C8965A':'rgba(245,239,230,0.8)', transition:'.3s', cursor: disabled?'not-allowed':'pointer', ...style }}>
+      {children}
+    </button>
+  );
+}
+
+// ── Step 0: Error / Not Found ──────────────────────────────────────────────
+function NotFound() {
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',textAlign:'center',padding:24}}>
+      <div>
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:64,color:'rgba(200,150,90,0.2)',lineHeight:1,marginBottom:20}}>404</div>
+        <div style={{color:'rgba(245,239,230,0.5)',fontSize:14,letterSpacing:'.1em'}}>連結無效或課程不存在</div>
+        <div style={{marginTop:12,fontSize:12,color:'rgba(245,239,230,0.25)'}}>請確認連結是否正確，或向課程老師取得有效連結</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 1: Welcome + Name ─────────────────────────────────────────────────
+function StepWelcome({ course, onNext }) {
+  const [name, setName] = useState('');
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'radial-gradient(ellipse at 50% 55%, #3D1A10 0%, #201008 40%, #1A1210 80%)',padding:24}}>
+      <div className="fade-up" style={{textAlign:'center',maxWidth:440}}>
+        <img src="uploads/Phinn-phang_wh-7ca1d186.png" alt="Phinn-Phang" style={{height:52,marginBottom:32,opacity:.85}} />
+        <div style={{fontSize:12,letterSpacing:'.3em',color:'rgba(200,150,90,0.6)',marginBottom:8}}>SCENT LAB · 配方登錄</div>
+        <h1 style={{fontFamily:"'Noto Serif TC',serif",fontSize:'clamp(22px,5vw,34px)',fontWeight:300,letterSpacing:'.15em',color:'#F0E8DE',marginBottom:8}}>{course.name}</h1>
+        <div style={{fontSize:12,color:'rgba(245,239,230,0.35)',letterSpacing:'.1em',marginBottom:40}}>{course.date} · {course.type}</div>
+        <div style={{width:36,height:1,background:'rgba(200,150,90,0.3)',margin:'0 auto 36px'}} />
+        <p style={{fontSize:14,color:'rgba(245,239,230,0.5)',lineHeight:2.1,marginBottom:36}}>
+          歡迎來到今天的香氛課。<br/>
+          請先輸入你的姓名，再開始登錄你的配方。
+        </p>
+        <input
+          value={name} onChange={e=>setName(e.target.value)}
+          onKeyDown={e=>e.key==='Enter'&&name.trim()&&onNext(name.trim())}
+          placeholder="你的姓名"
+          style={{width:'100%',maxWidth:280,textAlign:'center',fontSize:18,letterSpacing:'.1em',marginBottom:24,background:'rgba(200,150,90,0.06)',borderColor:'rgba(200,150,90,0.3)'}}
+          autoFocus
+        />
+        <br/>
+        <GoldBtn onClick={()=>onNext(name.trim())} disabled={!name.trim()}>開始登錄配方</GoldBtn>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 2: Base selection (if hasBase) ───────────────────────────────────
+function StepBase({ course, onNext }) {
+  const [sel, setSel] = useState(null);
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+      <div className="fade-up" style={{maxWidth:480,width:'100%'}}>
+        <div style={{textAlign:'center',marginBottom:36}}>
+          <div style={{fontSize:11,letterSpacing:'.3em',color:'rgba(200,150,90,0.55)',marginBottom:10}}>STEP 1 · 選擇基底</div>
+          <h2 style={{fontFamily:"'Noto Serif TC',serif",fontSize:24,fontWeight:300,letterSpacing:'.12em',color:'#F0E8DE'}}>你想要哪種基底？</h2>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:36}}>
+          {course.bases.map(b=>(
+            <button key={b.id} onClick={()=>setSel(b)}
+              style={{padding:'18px 24px',background:sel?.id===b.id?'rgba(200,150,90,0.12)':'rgba(245,239,230,0.03)',border:`1px solid ${sel?.id===b.id?'#C8965A':'rgba(245,239,230,0.12)'}`,color:sel?.id===b.id?'#C8965A':'rgba(245,239,230,0.65)',fontSize:16,letterSpacing:'.1em',transition:'.25s',textAlign:'left'}}>
+              {b.name}
+            </button>
+          ))}
+        </div>
+        <div style={{textAlign:'center'}}>
+          <GoldBtn onClick={()=>onNext(sel)} disabled={!sel}>下一步 →</GoldBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 3: Formula input ─────────────────────────────────────────────────
+function StepFormula({ course, onSubmit }) {
+  const [drops, setDrops] = useState(() => Object.fromEntries(course.ingredients.map(i=>[i.id,''])));
+  const total = course.ingredients.reduce((s,i)=>s+(Number(drops[i.id])||0), 0);
+
+  const pct = (id) => {
+    const d = Number(drops[id])||0;
+    return total > 0 ? Math.round(d/total*100) : 0;
+  };
+  const familyOf = (id) => PP.FAMILIES.find(f=>f.id===course.ingredients.find(i=>i.id===id)?.family);
+  const hasAny = total > 0;
+
+  const handleSubmit = () => {
+    const formula = course.ingredients
+      .filter(i=>(Number(drops[i.id])||0)>0)
+      .map(i=>({ ...i, drops: Number(drops[i.id]), percentage: pct(i.id) }));
+    onSubmit(formula, total);
+  };
+
+  return (
+    <div style={{minHeight:'100vh',background:'#1A1210',padding:'80px clamp(16px,5vw,60px) 60px'}}>
+      <div style={{maxWidth:700,margin:'0 auto'}}>
+        {/* Header */}
+        <div style={{textAlign:'center',marginBottom:48,animation:'fadeUp .6s ease'}}>
+          <div style={{fontSize:11,letterSpacing:'.3em',color:'rgba(200,150,90,0.55)',marginBottom:10}}>
+            {course.hasBase ? 'STEP 2' : 'STEP 1'} · 輸入配方
+          </div>
+          <h2 style={{fontFamily:"'Noto Serif TC',serif",fontSize:'clamp(20px,4vw,28px)',fontWeight:300,letterSpacing:'.12em',color:'#F0E8DE',marginBottom:8}}>{course.name}</h2>
+          <p style={{fontSize:13,color:'rgba(245,239,230,0.4)',letterSpacing:'.06em'}}>為每種香精輸入你使用的滴數</p>
+        </div>
+
+        {/* Live total */}
+        <div style={{textAlign:'center',marginBottom:36,padding:'16px',border:'1px solid rgba(200,150,90,0.15)',background:'rgba(200,150,90,0.04)'}}>
+          <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:36,color:hasAny?'#C8965A':'rgba(200,150,90,0.25)',letterSpacing:'.05em'}}>{total}</span>
+          <span style={{fontSize:13,color:'rgba(245,239,230,0.35)',marginLeft:8,letterSpacing:'.1em'}}>滴</span>
+          <div style={{fontSize:11,color:'rgba(245,239,230,0.25)',letterSpacing:'.1em',marginTop:4}}>總滴數</div>
+        </div>
+
+        {/* Ingredients */}
+        <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:40}}>
+          {course.ingredients.map((ing,idx)=>{
+            const d = Number(drops[ing.id])||0;
+            const p = pct(ing.id);
+            const fam = familyOf(ing.id);
+            return (
+              <div key={ing.id} className="fade-up" style={{animationDelay:`${idx*0.03}s`,display:'grid',gridTemplateColumns:'1fr auto 120px',gap:12,alignItems:'center',padding:'14px 18px',background: d>0?'rgba(200,150,90,0.06)':'rgba(245,239,230,0.02)',border:`1px solid ${d>0?'rgba(200,150,90,0.25)':'rgba(245,239,230,0.07)'}`,transition:'all .3s'}}>
+                <div>
+                  <div style={{fontSize:16,color:'#F0E8DE',letterSpacing:'.08em'}}>{ing.name}</div>
+                  <div style={{display:'flex',alignItems:'center',gap:6,marginTop:3}}>
+                    <span style={{width:6,height:6,borderRadius:'50%',background:fam?.color||'#888',display:'inline-block',flexShrink:0}} />
+                    <span style={{fontSize:11,color:'rgba(245,239,230,0.35)',letterSpacing:'.06em'}}>{fam?.zh} · {ing.nameEn} · {ing.layer==='top'?'前調':ing.layer==='middle'?'中調':'後調'}</span>
+                  </div>
+                </div>
+                <div style={{textAlign:'right',minWidth:48}}>
+                  {d>0 && <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:fam?.color||gold}}>{p}%</span>}
+                </div>
+                <input
+                  type="number" min="0" value={drops[ing.id]}
+                  onChange={e=>setDrops(p=>({...p,[ing.id]:e.target.value}))}
+                  placeholder="0"
+                  style={{textAlign:'center',fontSize:18,width:'100%',padding:'10px 8px'}}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{textAlign:'center'}}>
+          <GoldBtn onClick={handleSubmit} disabled={!hasAny} style={{padding:'15px 48px',fontSize:15}}>
+            提交配方，生成作品 ✦
+          </GoldBtn>
+          {!hasAny && <div style={{marginTop:12,fontSize:12,color:'rgba(245,239,230,0.25)',letterSpacing:'.08em'}}>請至少輸入一種香精的滴數</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 4: AI Loading ────────────────────────────────────────────────────
+function StepLoading() {
+  const msgs = ['正在解析你的配方…','計算香調比例中…','召喚 AI 命名靈感…','生成作品介紹…'];
+  const [idx, setIdx] = useState(0);
+  useEffect(()=>{
+    const t = setInterval(()=>setIdx(i=>(i+1)%msgs.length), 1400);
+    return ()=>clearInterval(t);
+  },[]);
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:28,background:'radial-gradient(ellipse at 50% 50%, #2A1208 0%, #1A1210 70%)'}}>
+      <div style={{width:52,height:52,border:'1px solid rgba(200,150,90,0.3)',borderTop:'1px solid #C8965A',borderRadius:'50%',animation:'spin 1.2s linear infinite'}} />
+      <div style={{fontSize:14,letterSpacing:'.15em',color:'rgba(200,150,90,0.7)',textAlign:'center',transition:'.4s'}}>{msgs[idx]}</div>
+    </div>
+  );
+}
+
+// ── Step 5: Naming ────────────────────────────────────────────────────────
+function StepNaming({ names, onSelect }) {
+  const [custom, setCustom] = useState('');
+  const [sel, setSel] = useState(null);
+  const [mode, setMode] = useState('ai'); // ai | custom
+
+  const confirm = () => onSelect(mode==='custom' ? custom.trim() : sel);
+
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+      <div className="fade-up" style={{maxWidth:480,width:'100%'}}>
+        <div style={{textAlign:'center',marginBottom:36}}>
+          <div style={{fontSize:11,letterSpacing:'.3em',color:'rgba(200,150,90,0.55)',marginBottom:10}}>AI 為你的作品命名</div>
+          <h2 style={{fontFamily:"'Noto Serif TC',serif",fontSize:26,fontWeight:300,letterSpacing:'.12em',color:'#F0E8DE'}}>選一個你喜歡的名字</h2>
+        </div>
+
+        {/* AI suggestions */}
+        <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:24}}>
+          {names.map((n,i)=>(
+            <button key={i} onClick={()=>{setSel(n);setMode('ai')}}
+              style={{padding:'20px 24px',background:mode==='ai'&&sel===n?'rgba(200,150,90,0.12)':'rgba(245,239,230,0.03)',border:`1px solid ${mode==='ai'&&sel===n?'#C8965A':'rgba(245,239,230,0.1)'}`,color:mode==='ai'&&sel===n?'#C8965A':'rgba(245,239,230,0.75)',fontFamily:"'Noto Serif TC',serif",fontSize:24,letterSpacing:'.2em',transition:'.25s',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              {n}
+              {mode==='ai'&&sel===n && <span style={{fontSize:13,color:'rgba(200,150,90,0.7)'}}>✓</span>}
+            </button>
+          ))}
+        </div>
+
+        {/* Divider */}
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
+          <div style={{flex:1,height:1,background:'rgba(245,239,230,0.08)'}} />
+          <div style={{fontSize:11,color:'rgba(245,239,230,0.3)',letterSpacing:'.15em'}}>或自訂名稱</div>
+          <div style={{flex:1,height:1,background:'rgba(245,239,230,0.08)'}} />
+        </div>
+
+        <input
+          value={custom}
+          onChange={e=>{setCustom(e.target.value);setMode('custom');setSel(null)}}
+          onClick={()=>setMode('custom')}
+          placeholder="輸入自訂名稱"
+          style={{width:'100%',textAlign:'center',fontSize:18,letterSpacing:'.12em',marginBottom:28,background: mode==='custom'&&custom?'rgba(200,150,90,0.06)':'rgba(245,239,230,0.03)',borderColor:mode==='custom'&&custom?'rgba(200,150,90,0.5)':'rgba(245,239,230,0.12)'}}
+        />
+
+        <div style={{textAlign:'center'}}>
+          <GoldBtn onClick={confirm} disabled={mode==='ai'?!sel:!custom.trim()}>確認這個名字 →</GoldBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main App ──────────────────────────────────────────────────────────────
+function FormulaApp() {
+  const token   = new URLSearchParams(window.location.search).get('token');
+  const course  = token ? PP.getCourseByToken(token) : null;
+  const [step, setStep] = useState(course ? 'welcome' : 'notfound');
+  const [student, setStudent] = useState('');
+  const [base, setBase] = useState(null);
+  const [formula, setFormula] = useState([]);
+  const [totalDrops, setTotalDrops] = useState(0);
+  const [aiNames, setAiNames] = useState([]);
+  const [aiDesc, setAiDesc] = useState('');
+
+  if (!course) return <NotFound />;
+
+  const handleWelcome = (name) => { setStudent(name); setStep(course.hasBase&&course.bases.length>0?'base':'formula'); };
+  const handleBase    = (b)    => { setBase(b); setStep('formula'); };
+
+  const handleFormula = async (f, total) => {
+    setFormula(f); setTotalDrops(total); setStep('loading');
+
+    const formulaText = f.map(i=>`${i.name}(${i.nameEn}) ${i.drops}滴 ${i.percentage}% [${PP.FAMILIES.find(x=>x.id===i.family)?.zh}調]`).join('\n');
+    const namePrompt  = (course.aiNamePrompt || PP.DEFAULT_SETTINGS.defaultAiNamePrompt) + '\n\n配方：\n' + formulaText;
+    const descPrompt  = (course.aiDescPrompt || PP.DEFAULT_SETTINGS.defaultAiDescPrompt) + '\n\n配方：\n' + formulaText;
+
+    try {
+      const [nameRes, descRes] = await Promise.all([
+        window.claude.complete(namePrompt),
+        window.claude.complete(descPrompt),
+      ]);
+      const names = nameRes.split('\n').map(l=>l.replace(/^[\d\.、\-\s]+/,'').trim()).filter(l=>l.length>0&&l.length<12).slice(0,3);
+      setAiNames(names.length>=2 ? names : ['無名之香', '初調', '練習曲']);
+      setAiDesc(descRes.trim());
+    } catch (e) {
+      setAiNames(['無名之香', '初調', '練習曲']);
+      setAiDesc('（AI 生成暫時無法使用，請稍後再試）');
+    }
+    setStep('naming');
+  };
+
+  const handleNaming = async (workName) => {
+    const work = {
+      id:          PP.genId(),
+      courseId:    course.id,
+      courseName:  course.name,
+      courseDate:  course.date,
+      courseType:  course.type,
+      studentName: student,
+      workName,
+      formula,
+      base,
+      totalDrops,
+      aiDescription: aiDesc,
+      radarData:   PP.computeRadar(formula),
+      createdAt:   new Date().toISOString(),
+      shareUrl:    `${window.location.origin}${window.location.pathname.replace('formula.html','work.html')}?id=`,
+    };
+    work.shareUrl += work.id;
+    PP.saveWork(work);
+
+    // Sync to Google Sheet (fire & forget)
+    const settings = PP.getSettings();
+    if (settings.googleScriptUrl) PP.syncWorkToSheet(work, settings.googleScriptUrl).catch(()=>{});
+
+    window.location.href = `work.html?id=${work.id}`;
+  };
+
+  return (
+    <>
+      {step==='notfound' && <NotFound />}
+      {step==='welcome' && <StepWelcome course={course} onNext={handleWelcome} />}
+      {step==='base'    && <StepBase course={course} onNext={handleBase} />}
+      {step==='formula' && <StepFormula course={course} onSubmit={handleFormula} />}
+      {step==='loading' && <StepLoading />}
+      {step==='naming'  && <StepNaming names={aiNames} onSelect={handleNaming} />}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<FormulaApp />);
+</script>
+</body>
+</html>

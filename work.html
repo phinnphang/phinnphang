@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phinn-Phang 作品頁</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Lato:wght@300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#1A1210;color:#F0E8DE;font-family:'Noto Serif TC',serif;font-weight:300;line-height:1.75;min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(200,150,90,0.3)}
+button{cursor:pointer;font-family:inherit}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glow{0%,100%{opacity:.4}50%{opacity:.8}}
+.fade-up{animation:fadeUp .7s ease both}
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="app-data.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ── Radar Chart ───────────────────────────────────────────────────────────
+function RadarChart({ radarData }) {
+  const ref = useRef(null);
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    if (!ref.current || !radarData?.length) return;
+    if (chartRef.current) chartRef.current.destroy();
+
+    const labels = radarData.map(d => d.zh);
+    const values = radarData.map(d => d.value);
+    const colors = radarData.map(d => d.color);
+
+    chartRef.current = new Chart(ref.current, {
+      type: 'radar',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: 'rgba(232,149,122,0.2)',
+          borderColor: '#E8957A',
+          borderWidth: 1.5,
+          pointBackgroundColor: colors,
+          pointBorderColor: 'transparent',
+          pointRadius: 4,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          r: {
+            min: 0, max: 100,
+            ticks: { display: false, stepSize: 25 },
+            grid: { color: 'rgba(200,150,90,0.12)', lineWidth: 0.8 },
+            angleLines: { color: 'rgba(200,150,90,0.15)', lineWidth: 0.8 },
+            pointLabels: {
+              color: ctx => {
+                const v = values[ctx.index];
+                return v > 0 ? '#C8965A' : 'rgba(200,150,90,0.3)';
+              },
+              font: { family: "'Noto Serif TC', serif", size: 13, weight: '300' },
+            },
+          },
+        },
+        plugins: { legend: { display: false } },
+        animation: { duration: 1200, easing: 'easeInOutQuart' },
+      },
+    });
+    return () => chartRef.current?.destroy();
+  }, [radarData]);
+
+  return <canvas ref={ref} style={{ maxWidth: 340, maxHeight: 340 }} />;
+}
+
+// ── Ingredient Bar ────────────────────────────────────────────────────────
+function IngredientBar({ ing, idx }) {
+  const fam = PP.FAMILIES.find(f => f.id === ing.family);
+  const layer = ing.layer === 'top' ? '前調' : ing.layer === 'middle' ? '中調' : '後調';
+  return (
+    <div className="fade-up" style={{ animationDelay: `${idx * 0.06}s`, marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: fam?.color || '#888', display: 'inline-block', flexShrink: 0 }} />
+          <span style={{ fontSize: 15, color: '#F0E8DE', letterSpacing: '.06em' }}>{ing.name}</span>
+          <span style={{ fontSize: 11, color: 'rgba(245,239,230,0.35)', letterSpacing: '.05em' }}>{ing.nameEn} · {layer}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: fam?.color || '#C8965A' }}>{ing.percentage}%</span>
+          <span style={{ fontSize: 11, color: 'rgba(245,239,230,0.3)' }}>{ing.drops}滴</span>
+        </div>
+      </div>
+      <div style={{ height: 3, background: 'rgba(245,239,230,0.05)', borderRadius: 2, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${ing.percentage}%`, background: fam?.color || '#C8965A', opacity: 0.7, borderRadius: 2, transition: 'width 1s ease' }} />
+      </div>
+    </div>
+  );
+}
+
+// ── Download ──────────────────────────────────────────────────────────────
+async function downloadWorkImage(work) {
+  const canvas = await PP.generateWorkImage(work);
+  const link   = document.createElement('a');
+  link.download = `${work.workName}-${work.studentName}.png`;
+  link.href     = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// ── Work Page ─────────────────────────────────────────────────────────────
+function WorkPage({ work }) {
+  const [downloading, setDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const radar = work.radarData || PP.computeRadar(work.formula);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try { await downloadWorkImage(work); }
+    catch (e) { alert('下載失敗，請稍後再試'); }
+    setDownloading(false);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(work.shareUrl || window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Top active families
+  const topFamilies = [...radar].sort((a, b) => b.value - a.value).filter(d => d.value > 0).slice(0, 3);
+
+  return (
+    <div style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(80px,10vh,120px) clamp(20px,5vw,40px) 80px' }}>
+
+      {/* Header */}
+      <div className="fade-up" style={{ textAlign: 'center', marginBottom: 56 }}>
+        <img src="uploads/Phinn-phang_wh-7ca1d186.png" alt="Phinn-Phang" style={{ height: 44, marginBottom: 28, opacity: .75 }} />
+        <div style={{ fontSize: 11, letterSpacing: '.3em', color: 'rgba(200,150,90,0.55)', marginBottom: 12 }}>SCENT WORK · 作品</div>
+        <h1 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(36px,8vw,72px)', fontWeight: 300, letterSpacing: '.2em', color: '#F0E8DE', lineHeight: 1.1, marginBottom: 16, textShadow: '0 0 80px rgba(220,120,90,0.2)' }}>
+          {work.workName}
+        </h1>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, fontStyle: 'italic', color: 'rgba(200,150,90,0.65)', letterSpacing: '.15em' }}>
+          {work.studentName} · {work.courseDate}
+        </div>
+        <div style={{ fontSize: 12, color: 'rgba(245,239,230,0.3)', letterSpacing: '.1em', marginTop: 6 }}>
+          {work.courseName} · {work.courseType}
+          {work.base && ` · ${work.base.name}`}
+        </div>
+
+        {/* Family tags */}
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 20, flexWrap: 'wrap' }}>
+          {topFamilies.map(f => (
+            <span key={f.id} style={{ padding: '3px 12px', border: `1px solid ${f.color}60`, color: f.color, fontSize: 12, letterSpacing: '.08em' }}>
+              {f.zh} {f.value}%
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ width: '100%', height: 1, background: 'linear-gradient(to right, transparent, rgba(200,150,90,0.25), transparent)', marginBottom: 56 }} />
+
+      {/* Radar + Description */}
+      <div className="fade-up" style={{ animationDelay: '.2s', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, marginBottom: 56, alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <RadarChart radarData={radar} />
+        </div>
+        <div>
+          <div style={{ fontSize: 11, letterSpacing: '.25em', color: 'rgba(200,150,90,0.55)', marginBottom: 14 }}>CREATOR'S NOTE</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, color: 'rgba(200,150,90,0.2)', lineHeight: 1, marginBottom: -8, marginLeft: -4 }}>"</div>
+          <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, color: 'rgba(245,239,230,0.6)', lineHeight: 2.2, letterSpacing: '.05em' }}>
+            {work.aiDescription}
+          </p>
+        </div>
+      </div>
+
+      {/* Ingredient breakdown */}
+      <div className="fade-up" style={{ animationDelay: '.35s', marginBottom: 56 }}>
+        <div style={{ fontSize: 11, letterSpacing: '.25em', color: 'rgba(200,150,90,0.55)', marginBottom: 20 }}>配方組成 · {work.totalDrops} 滴</div>
+        {[...work.formula]
+          .sort((a, b) => b.drops - a.drops)
+          .map((ing, i) => <IngredientBar key={ing.id} ing={ing} idx={i} />)
+        }
+      </div>
+
+      {/* CTA */}
+      <div className="fade-up" style={{ animationDelay: '.5s', borderTop: '1px solid rgba(200,150,90,0.12)', paddingTop: 40, display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <button onClick={handleDownload} disabled={downloading}
+          style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '.15em', padding: '13px 32px', background: 'rgba(200,150,90,0.12)', border: '1px solid rgba(200,150,90,0.5)', color: '#C8965A', transition: '.3s', opacity: downloading ? .5 : 1 }}>
+          {downloading ? '生成中…' : '↓ 下載作品圖片'}
+        </button>
+        <button onClick={handleCopy}
+          style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '.15em', padding: '13px 32px', background: 'transparent', border: '1px solid rgba(245,239,230,0.15)', color: copied ? 'rgba(123,158,110,0.9)' : 'rgba(245,239,230,0.4)', transition: '.3s' }}>
+          {copied ? '✓ 已複製連結' : '分享連結'}
+        </button>
+      </div>
+
+      {/* Footer */}
+      <div style={{ textAlign: 'center', marginTop: 64, fontFamily: "'Cormorant Garamond', serif", fontSize: 11, fontStyle: 'italic', letterSpacing: '.3em', color: 'rgba(200,150,90,0.3)' }}>
+        Phinn-Phang scent lab · 聞香
+      </div>
+    </div>
+  );
+}
+
+// ── Not Found ─────────────────────────────────────────────────────────────
+function NotFound() {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24 }}>
+      <div>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 64, color: 'rgba(200,150,90,0.2)', lineHeight: 1, marginBottom: 20 }}>404</div>
+        <div style={{ color: 'rgba(245,239,230,0.5)', fontSize: 14, letterSpacing: '.1em' }}>作品不存在或連結已失效</div>
+      </div>
+    </div>
+  );
+}
+
+// ── App ────────────────────────────────────────────────────────────────────
+function WorkApp() {
+  const id   = new URLSearchParams(window.location.search).get('id');
+  const work = id ? PP.getWorkById(id) : null;
+  return work ? <WorkPage work={work} /> : <NotFound />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<WorkApp />);
+</script>
+</body>
+</html>
