@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phinn-Phang 預約體驗</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#1A1210;color:#F0E8DE;font-family:'Noto Serif TC',serif;font-weight:300;line-height:1.75;min-height:100vh;-webkit-font-smoothing:antialiased}
+input,select,textarea{background:rgba(200,150,90,0.06);border:1px solid rgba(200,150,90,0.25);color:#F0E8DE;font-family:inherit;font-size:14px;padding:11px 14px;width:100%;outline:none;transition:.25s;border-radius:0}
+input:focus,select:focus,textarea:focus{border-color:rgba(200,150,90,0.6)}
+select option{background:#1E1A16}
+button{cursor:pointer;font-family:inherit}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .6s ease both}
+label{display:block;font-size:11px;letter-spacing:.15em;color:rgba(200,150,90,0.7);margin-bottom:6px}
+</style>
+<script src="app-data.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+function GoldBtn({ children, onClick, disabled }) {
+  return (
+    <button disabled={disabled} onClick={onClick}
+      style={{fontFamily:"'Noto Serif TC',serif",fontSize:14,letterSpacing:'.15em',padding:'13px 36px',background:disabled?'transparent':'rgba(200,150,90,0.12)',border:`1px solid ${disabled?'rgba(200,150,90,0.2)':'#C8965A'}`,color:disabled?'rgba(200,150,90,0.3)':'#C8965A',transition:'.3s',cursor:disabled?'not-allowed':'pointer'}}>
+      {children}
+    </button>
+  );
+}
+
+// Inquiry form (group / customization)
+function InquiryForm({ inquiry, setInquiry, onSubmit, err, modal }) {
+  const types = ['團體課程', '企業活動 / Team Building', '客製香水禮品', '婚禮 / 活動調香', '其他'];
+  return (
+    <div>
+      <div style={{padding:'14px 16px',background:'rgba(200,150,90,0.04)',border:'1px solid rgba(200,150,90,0.12)',marginBottom:24,fontSize:12,lineHeight:1.9,letterSpacing:'.05em',color:'rgba(245,239,230,0.55)'}}>
+        告訴我們你的想法，我們會在 2-3 個工作天內以 email 回覆，
+        一起規劃屬於你的氣味體驗。也可直接來信至
+        <a href="mailto:hello@phinn-phang.com" style={{color:'#D4A574',letterSpacing:'.08em',textDecoration:'none',borderBottom:'1px solid rgba(200,150,90,0.3)',marginLeft:4}}>hello@phinn-phang.com</a>
+      </div>
+
+      <div style={{marginBottom:18}}>
+        <label>諮詢類型</label>
+        <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+          {types.map(t => (
+            <button key={t} onClick={()=>setInquiry(p=>({...p,type:t}))}
+              style={{padding:'8px 14px',background:inquiry.type===t?'rgba(200,150,90,0.15)':'transparent',border:`1px solid ${inquiry.type===t?'#C8965A':'rgba(245,239,230,0.12)'}`,color:inquiry.type===t?'#C8965A':'rgba(245,239,230,0.6)',fontSize:12,letterSpacing:'.08em',fontFamily:"'Noto Serif TC',serif",cursor:'pointer',transition:'.2s'}}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:12,marginBottom:18}}>
+        <div>
+          <label>姓名 / 公司</label>
+          <input value={inquiry.name} onChange={e=>setInquiry(p=>({...p,name:e.target.value}))} />
+        </div>
+        <div>
+          <label>預計人數</label>
+          <input value={inquiry.people} onChange={e=>setInquiry(p=>({...p,people:e.target.value}))} placeholder="約 10 人" />
+        </div>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:18}}>
+        <div>
+          <label>Email</label>
+          <input type="email" value={inquiry.email} onChange={e=>setInquiry(p=>({...p,email:e.target.value}))} placeholder="your@email.com" />
+        </div>
+        <div>
+          <label>聯絡電話（選填）</label>
+          <input value={inquiry.phone} onChange={e=>setInquiry(p=>({...p,phone:e.target.value}))} />
+        </div>
+      </div>
+
+      <div style={{marginBottom:28}}>
+        <label>詳細需求</label>
+        <textarea rows={5} value={inquiry.note} onChange={e=>setInquiry(p=>({...p,note:e.target.value}))} placeholder="想舉辦的場合、預計日期、預算區間、主題靈感..." style={{resize:'vertical'}} />
+      </div>
+
+      {err && <div style={{color:'#C86050',fontSize:13,marginBottom:16,textAlign:'center'}}>{err}</div>}
+
+      <div style={{textAlign:'center'}}>
+        <GoldBtn onClick={onSubmit}>送出詢問 ✉</GoldBtn>
+        {!modal && (
+          <div style={{marginTop:20}}>
+            <a href="index.html" style={{fontFamily:"'Noto Serif TC',serif",fontSize:12,letterSpacing:'.1em',color:'rgba(245,239,230,0.25)',textDecoration:'none',borderBottom:'1px solid rgba(245,239,230,0.1)',paddingBottom:2}}>← 回首頁</a>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Confirmation ──────────────────────────────────────────────────────────
+function Confirm({ data, modal, onClose }) {
+  return (
+    <div style={{minHeight: modal?'auto':'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24,background: modal?'transparent':'radial-gradient(ellipse at 50% 50%, #3D1A10 0%, #201008 40%, #1A1210 80%)'}}>
+      <div className="fade-up" style={{maxWidth:520,textAlign:'center'}}>
+        {!modal && <img src="uploads/Phinn-phang_wh-7ca1d186.png" alt="Phinn-Phang" style={{height:48,marginBottom:32,opacity:.8}} />}
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:60,color:'#E8957A',lineHeight:1,marginBottom:20,opacity:.5}}>✦</div>
+        <h1 style={{fontFamily:"'Noto Serif TC',serif",fontSize:'clamp(22px,5vw,30px)',fontWeight:300,letterSpacing:'.15em',color:'#F0E8DE',marginBottom:20}}>預約已送出</h1>
+        <p style={{fontSize:14,color:'rgba(245,239,230,0.55)',lineHeight:2.2,letterSpacing:'.05em',marginBottom:40}}>
+          感謝 {data.name} 的預約<br/>
+          我們會在 1-2 個工作天內寄送確認信到<br/>
+          <span style={{color:'#C8965A',letterSpacing:'.08em'}}>{data.email}</span>
+        </p>
+        <div style={{padding:'20px 24px',background:'rgba(200,150,90,0.04)',border:'1px solid rgba(200,150,90,0.12)',marginBottom:32,textAlign:'left',fontSize:13,lineHeight:2,color:'rgba(245,239,230,0.55)'}}>
+          <div>體驗內容：{data.courseName}</div>
+          <div>預約日期：{data.date} {data.time}</div>
+          <div>人數：{data.people} 位</div>
+        </div>
+        {modal
+          ? <button onClick={onClose} style={{background:'transparent',border:'1px solid rgba(200,150,90,0.4)',color:'#C8965A',padding:'11px 32px',fontFamily:"'Noto Serif TC',serif",fontSize:13,letterSpacing:'.15em',cursor:'pointer'}}>關閉</button>
+          : <a href="index.html" style={{fontFamily:"'Noto Serif TC',serif",fontSize:13,letterSpacing:'.15em',color:'rgba(245,239,230,0.5)',textDecoration:'none',borderBottom:'1px solid rgba(245,239,230,0.2)',paddingBottom:3}}>← 回首頁</a>}
+      </div>
+    </div>
+  );
+}
+
+// Inquiry confirmation (group / customization)
+function InquiryConfirm({ data, modal, onClose }) {
+  return (
+    <div style={{minHeight: modal?'auto':'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24,background: modal?'transparent':'radial-gradient(ellipse at 50% 50%, #3D1A10 0%, #201008 40%, #1A1210 80%)'}}>
+      <div className="fade-up" style={{maxWidth:520,textAlign:'center'}}>
+        {!modal && <img src="uploads/Phinn-phang_wh-7ca1d186.png" alt="Phinn-Phang" style={{height:48,marginBottom:32,opacity:.8}} />}
+        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:60,color:'#E8957A',lineHeight:1,marginBottom:20,opacity:.5}}>✉</div>
+        <h1 style={{fontFamily:"'Noto Serif TC',serif",fontSize:'clamp(22px,5vw,30px)',fontWeight:300,letterSpacing:'.15em',color:'#F0E8DE',marginBottom:20}}>詢問已傳送</h1>
+        <p style={{fontSize:14,color:'rgba(245,239,230,0.55)',lineHeight:2.2,letterSpacing:'.05em',marginBottom:32}}>
+          感謝 {data.name} 的詢問<br/>
+          我們會在 2-3 個工作天內回覆至<br/>
+          <span style={{color:'#C8965A',letterSpacing:'.08em'}}>{data.email}</span>
+        </p>
+        <div style={{padding:'16px 20px',background:'rgba(200,150,90,0.04)',border:'1px solid rgba(200,150,90,0.12)',marginBottom:32,fontSize:12,letterSpacing:'.08em',color:'rgba(245,239,230,0.5)'}}>
+          若有緊急事宜，歡迎來信至<br/>
+          <a href={`mailto:hello@phinn-phang.com?subject=${encodeURIComponent('團體/客製課程詢問—'+data.name)}`} style={{color:'#D4A574',letterSpacing:'.1em',textDecoration:'none',borderBottom:'1px solid rgba(200,150,90,0.3)'}}>hello@phinn-phang.com</a>
+        </div>
+        {modal
+          ? <button onClick={onClose} style={{background:'transparent',border:'1px solid rgba(200,150,90,0.4)',color:'#C8965A',padding:'11px 32px',fontFamily:"'Noto Serif TC',serif",fontSize:13,letterSpacing:'.15em',cursor:'pointer'}}>關閉</button>
+          : <a href="index.html" style={{fontFamily:"'Noto Serif TC',serif",fontSize:13,letterSpacing:'.15em',color:'rgba(245,239,230,0.5)',textDecoration:'none',borderBottom:'1px solid rgba(245,239,230,0.2)',paddingBottom:3}}>← 回首頁</a>}
+      </div>
+    </div>
+  );
+}
+
+// Reserve Form
+function ReserveApp({ modal }) {
+  const [courses, setCourses] = useState([]);
+  const [done, setDone] = useState(null);
+  const [mode, setMode] = useState('booking'); // 'booking' | 'inquiry'
+  const [form, setForm] = useState({
+    name:'', email:'', people:1, courseId:'', date:'', time:'', note:''
+  });
+  const [inquiry, setInquiry] = useState({ name:'', email:'', phone:'', type:'團體課程', people:'', note:'' });
+  const [err, setErr] = useState('');
+
+  const closeModal = () => { window.parent?.postMessage?.({type:'pp-reserve-close'},'*'); };
+
+  useEffect(() => { setCourses(PP.getBookableCourses()); }, []);
+
+  const selected = courses.find(c => c.id === form.courseId);
+  const availableSlots = selected?.slots || [];
+  const reservations = PP.getReservations();
+  const peopleBooked = (slotId) => reservations
+    .filter(r => r.courseId === form.courseId && r.slotId === slotId && r.status !== 'cancelled')
+    .reduce((s, r) => s + Number(r.people || 0), 0);
+
+  const submit = () => {
+    setErr('');
+    if (!form.name.trim())  return setErr('請填寫姓名');
+    if (!form.email.trim()) return setErr('請填寫 email');
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) return setErr('email 格式不正確');
+    if (!form.courseId)     return setErr('請選擇體驗內容');
+    if (!form.date || !form.time) return setErr('請選擇日期與時間');
+    if (form.people < 1)    return setErr('人數至少 1 位');
+
+    const slot = availableSlots.find(s => s.id === form.date + form.time) ||
+                 availableSlots.find(s => s.date === form.date && s.time === form.time);
+    const slotId = slot?.id || `${form.date}_${form.time}`;
+
+    const reservation = {
+      id:          PP.genId(),
+      courseId:    form.courseId,
+      courseName:  selected.name,
+      slotId,
+      name:        form.name.trim(),
+      email:       form.email.trim(),
+      people:      Number(form.people),
+      date:        form.date,
+      time:        form.time,
+      note:        form.note.trim(),
+      status:      'pending',
+      createdAt:   new Date().toISOString(),
+    };
+    PP.saveReservation(reservation);
+    setDone(reservation);
+  };
+
+  const submitInquiry = () => {
+    setErr('');
+    if (!inquiry.name.trim())  return setErr('請填寫姓名 / 公司');
+    if (!inquiry.email.trim()) return setErr('請填寫 email');
+    if (!/^\S+@\S+\.\S+$/.test(inquiry.email)) return setErr('email 格式不正確');
+    const subject = encodeURIComponent(`團體/客製課程詢問—${inquiry.name}`);
+    const body = encodeURIComponent(
+      `姓名 / 公司：${inquiry.name}\n` +
+      `Email：${inquiry.email}\n` +
+      `聯絡電話：${inquiry.phone || '—'}\n` +
+      `詢問類型：${inquiry.type}\n` +
+      `預計人數：${inquiry.people || '—'}\n` +
+      `詳細需求：\n${inquiry.note || '—'}\n`
+    );
+    window.open(`mailto:hello@phinn-phang.com?subject=${subject}&body=${body}`, '_blank');
+    setDone({ kind:'inquiry', name: inquiry.name, email: inquiry.email });
+  };
+
+  if (done) return done.kind === 'inquiry'
+    ? <InquiryConfirm data={done} modal={modal} onClose={closeModal} />
+    : <Confirm data={done} modal={modal} onClose={closeModal} />;
+
+  return (
+    <div style={{minHeight: modal?'auto':'100vh',padding:modal?'0':'clamp(60px,10vh,100px) clamp(20px,5vw,40px) 80px',position:'relative'}}>
+      {modal && (
+        <button onClick={closeModal} aria-label="關閉"
+          style={{position:'absolute',top:20,right:20,width:40,height:40,background:'transparent',border:'1px solid rgba(200,150,90,0.25)',color:'rgba(200,150,90,0.7)',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',zIndex:5,transition:'.2s'}}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(200,150,90,0.6)';e.currentTarget.style.color='#C8965A';}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(200,150,90,0.25)';e.currentTarget.style.color='rgba(200,150,90,0.7)';}}>
+          ✕
+        </button>
+      )}
+      <div className="fade-up" style={{maxWidth:560,margin:'0 auto',padding:modal?'56px 24px 40px':'0'}}>
+        <div style={{textAlign:'center',marginBottom:36}}>
+          {!modal && <img src="uploads/Phinn-phang_wh-7ca1d186.png" alt="Phinn-Phang" style={{height:44,marginBottom:24,opacity:.75}} />}
+          <div style={{fontSize:11,letterSpacing:'.3em',color:'rgba(200,150,90,0.6)',marginBottom:12}}>RESERVE · {mode==='booking'?'預約體驗':'團體 / 客製'}</div>
+          <h1 style={{fontFamily:"'Noto Serif TC',serif",fontSize:'clamp(24px,5vw,32px)',fontWeight:300,letterSpacing:'.18em',color:'#F0E8DE',marginBottom:12}}>{mode==='booking'?'來聞香':'聊聊你的想法'}</h1>
+          <p style={{fontSize:13,color:'rgba(245,239,230,0.45)',letterSpacing:'.06em'}}>{mode==='booking'?'填寫以下資料，我們會盡快與你聯繫確認':'讓我們為你規劃專屬的氣味體驗'}</p>
+        </div>
+
+        {/* Mode tabs */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:0,marginBottom:32,border:'1px solid rgba(200,150,90,0.18)'}}>
+          {[
+            {id:'booking',label:'體驗課預約'},
+            {id:'inquiry',label:'團體 / 客製諮詢'},
+          ].map((t,i)=>(
+            <button key={t.id} onClick={()=>{setMode(t.id);setErr('');}}
+              style={{padding:'12px 8px',background:mode===t.id?'rgba(200,150,90,0.12)':'transparent',border:'none',borderLeft:i>0?'1px solid rgba(200,150,90,0.18)':'none',color:mode===t.id?'#C8965A':'rgba(245,239,230,0.5)',fontFamily:"'Noto Serif TC',serif",fontSize:13,letterSpacing:'.15em',cursor:'pointer',transition:'.2s'}}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {mode === 'inquiry' ? (
+          <InquiryForm inquiry={inquiry} setInquiry={setInquiry} onSubmit={submitInquiry} err={err} modal={modal} />
+        ) : (
+        <>
+        {courses.length === 0 ? (
+          <div style={{textAlign:'center',padding:60,border:'1px dashed rgba(200,150,90,0.2)',color:'rgba(245,239,230,0.4)'}}>
+            目前沒有開放預約的體驗。<br/>
+            <span style={{fontSize:12,color:'rgba(245,239,230,0.3)',display:'block',marginTop:8}}>請切換至「團體 / 客製諮詢」與我們聯繫，或稍後再回來看看。</span>
+          </div>
+        ) : (
+        <>
+          <div style={{marginBottom:18}}>
+            <label>體驗內容</label>
+            <select value={form.courseId} onChange={e=>setForm(p=>({...p,courseId:e.target.value,date:'',time:''}))}>
+              <option value="">— 請選擇 —</option>
+              {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+
+          {selected && availableSlots.length > 0 && (
+            <div style={{marginBottom:18}}>
+              <label>可預約時段（人數上限 {selected.capacity || '—'} 位）</label>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))',gap:8}}>
+                {availableSlots.map(s => {
+                  const booked = peopleBooked(s.id);
+                  const cap    = selected.capacity || 999;
+                  const full   = booked >= cap;
+                  const active = form.date === s.date && form.time === s.time;
+                  return (
+                    <button key={s.id} onClick={()=>!full&&setForm(p=>({...p,date:s.date,time:s.time}))}
+                      style={{padding:'10px 12px',background:active?'rgba(200,150,90,0.15)':'rgba(245,239,230,0.03)',border:`1px solid ${active?'#C8965A':full?'rgba(180,90,80,0.2)':'rgba(245,239,230,0.1)'}`,color:full?'rgba(180,90,80,0.5)':active?'#C8965A':'rgba(245,239,230,0.7)',fontSize:13,textAlign:'left',cursor:full?'not-allowed':'pointer',transition:'.2s'}}>
+                      <div style={{letterSpacing:'.08em'}}>{s.date}</div>
+                      <div style={{fontSize:11,color:'rgba(245,239,230,0.4)',marginTop:2}}>
+                        {s.time} · {full?'已額滿':`剩 ${cap - booked} 位`}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {selected && availableSlots.length === 0 && (
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:18}}>
+              <div>
+                <label>日期</label>
+                <input type="date" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))} />
+              </div>
+              <div>
+                <label>時間</label>
+                <input type="time" value={form.time} onChange={e=>setForm(p=>({...p,time:e.target.value}))} />
+              </div>
+            </div>
+          )}
+
+          <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:12,marginBottom:18}}>
+            <div>
+              <label>姓名</label>
+              <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} />
+            </div>
+            <div>
+              <label>人數</label>
+              <input type="number" min="1" value={form.people} onChange={e=>setForm(p=>({...p,people:e.target.value}))} />
+            </div>
+          </div>
+
+          <div style={{marginBottom:18}}>
+            <label>Email</label>
+            <input type="email" value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="your@email.com" />
+          </div>
+
+          <div style={{marginBottom:28}}>
+            <label>備註（選填）</label>
+            <textarea rows={3} value={form.note} onChange={e=>setForm(p=>({...p,note:e.target.value}))} placeholder="有什麼想先讓我們知道的嗎？" style={{resize:'vertical'}} />
+          </div>
+
+          {err && <div style={{color:'#C86050',fontSize:13,marginBottom:16,textAlign:'center'}}>{err}</div>}
+
+          <div style={{textAlign:'center'}}>
+            <GoldBtn onClick={submit}>送出預約 ✦</GoldBtn>
+            {!modal && (
+              <div style={{marginTop:20}}>
+                <a href="index.html" style={{fontFamily:"'Noto Serif TC',serif",fontSize:12,letterSpacing:'.1em',color:'rgba(245,239,230,0.25)',textDecoration:'none',borderBottom:'1px solid rgba(245,239,230,0.1)',paddingBottom:2}}>← 回首頁</a>
+              </div>
+            )}
+          </div>
+        </>
+        )}
+        </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<ReserveApp modal={new URLSearchParams(location.search).get('modal')==='1'} />);
+</script>
+</body>
+</html>
