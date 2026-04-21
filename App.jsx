@@ -55,6 +55,7 @@ function App() {
   const [page, setPageRaw] = useState(TWEAK_DEFAULTS.startPage || saved);
   const [cartCount, setCartCount] = useState(0);
   const [tweaksVisible, setTweaksVisible] = useState(false);
+  const [portalOpen, setPortalOpen] = useState(false);
   const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
 
   const setPage = (p) => {
@@ -83,7 +84,27 @@ function App() {
     }
   }, [tweaks.colorTemp]);
 
-  // Tweaks host protocol
+  // Create demo course if not exists
+  useEffect(() => {
+    if (!PP.getCourseByToken('pp-demo0001')) {
+      PP.saveCourse({
+        id: 'demo0001', name: '示範體驗課', type: '春季體驗課',
+        date: new Date().toISOString().slice(0,10), token: 'pp-demo0001',
+        hasBase: false, bases: [],
+        aiNamePrompt: PP.DEFAULT_SETTINGS.defaultAiNamePrompt,
+        aiDescPrompt: PP.DEFAULT_SETTINGS.defaultAiDescPrompt,
+        ingredients: [
+          { id:'d1', name:'佛手柑', nameEn:'Bergamot',  family:'citrus',   layer:'top'    },
+          { id:'d2', name:'茉莉',   nameEn:'Jasmine',   family:'floral',   layer:'middle' },
+          { id:'d3', name:'檀香',   nameEn:'Sandalwood',family:'woody',    layer:'base'   },
+          { id:'d4', name:'廣藿香', nameEn:'Patchouli', family:'oriental', layer:'base'   },
+          { id:'d5', name:'葡萄柚', nameEn:'Grapefruit',family:'citrus',   layer:'top'    },
+          { id:'d6', name:'玫瑰',   nameEn:'Rose',      family:'floral',   layer:'middle' },
+        ],
+        createdAt: new Date().toISOString(),
+      });
+    }
+  }, []);
   useEffect(() => {
     const handler = (e) => {
       if (e.data?.type === '__activate_edit_mode') setTweaksVisible(true);
@@ -104,7 +125,8 @@ function App() {
 
   return (
     <div style={wrapStyle}>
-      <Header setPage={setPage} cartCount={cartCount} tweaks={tweaks} />
+      <Header setPage={setPage} cartCount={cartCount} tweaks={tweaks} onPortal={()=>setPortalOpen(true)} />
+      {portalOpen && <PortalModal onClose={()=>setPortalOpen(false)} />}
       <main style={{ paddingTop: page === 'home' ? 0 : 72 }}>
         {page === 'home'    && <HomePage setPage={setPage} />}
         {page === 'product' && <ProductPage setPage={setPage} />}

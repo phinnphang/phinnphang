@@ -201,8 +201,11 @@ function WorkPage({ work }) {
       </div>
 
       {/* Footer */}
-      <div style={{ textAlign: 'center', marginTop: 64, fontFamily: "'Cormorant Garamond', serif", fontSize: 11, fontStyle: 'italic', letterSpacing: '.3em', color: 'rgba(200,150,90,0.3)' }}>
-        Phinn-Phang scent lab · 聞香
+      <div style={{ textAlign: 'center', marginTop: 64, display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+        <a href="index.html" style={{ fontFamily:"'Noto Serif TC',serif", fontSize:13, letterSpacing:'.12em', color:'rgba(245,239,230,0.35)', textDecoration:'none', borderBottom:'1px solid rgba(245,239,230,0.12)', paddingBottom:2, transition:'.25s' }}>← 回首頁</a>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, fontStyle: 'italic', letterSpacing: '.3em', color: 'rgba(200,150,90,0.3)' }}>
+          Phinn-Phang scent lab · 聞香
+        </div>
       </div>
     </div>
   );

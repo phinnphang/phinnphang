@@ -79,6 +79,9 @@ function StepWelcome({ course, onNext }) {
         />
         <br/>
         <GoldBtn onClick={()=>onNext(name.trim())} disabled={!name.trim()}>開始登錄配方</GoldBtn>
+        <div style={{marginTop:20}}>
+          <a href="index.html" style={{fontFamily:"'Noto Serif TC',serif",fontSize:12,letterSpacing:'.1em',color:'rgba(245,239,230,0.25)',textDecoration:'none',borderBottom:'1px solid rgba(245,239,230,0.1)',paddingBottom:2}}>← 回首頁</a>
+        </div>
       </div>
     </div>
   );
