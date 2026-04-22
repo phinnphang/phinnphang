@@ -53,34 +53,75 @@ function CTAButton({ children, onClick, gold, style }) {
 }
 
 // ── Admin Tab (inline login) ──────────────────────────────────────────────
+// ── Admin Tab (inline login) ──────────────────────────────────────────────
 function AdminTabLogin({ onClose }) {
   const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
-  const submit = (e) => {
+  const settings = PP.getSettings();
+
+  useEffect(() => {
+    if (settings.googleClientId && window.google) {
+      window.google.accounts.id.initialize({
+        client_id: settings.googleClientId,
+        callback: handleGoogleLogin
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById("googleBtnSide"),
+        { theme: "outline", size: "large", width: 334, text: "signin_with" }
+      );
+    }
+  }, [settings.googleClientId]);
+
+  const handleGoogleLogin = (response) => {
+    const user = PP.parseJwt(response.credential);
+    if (user && user.email === settings.adminEmail) {
+      sessionStorage.setItem('pp_admin_auth', '1');
+      window.location.href = 'admin.html';
+    } else {
+      setErr('此 Google 帳號未獲得授權');
+    }
+  };
+
+  const submit = async (e) => {
     e.preventDefault();
-    const s = PP.getSettings();
-    if (pw === s.adminPassword) {
+    const h = await PP.hash(pw);
+    if (h === settings.adminPassword) {
       sessionStorage.setItem('pp_admin_auth', '1');
       window.location.href = 'admin.html';
     } else {
       setErr('密碼錯誤');
     }
   };
+
   return (
-    <form onSubmit={submit}>
+    <div>
       <p style={{ fontFamily:"'Noto Serif TC',serif", fontSize:13, color:'rgba(245,239,230,0.45)', lineHeight:2, letterSpacing:'.04em', marginBottom:20 }}>
-        請輸入管理員密碼，進入課程管理後台。
+        請登入管理員帳號，進入課程管理後台。
       </p>
-      <input
-        type="password" value={pw} onChange={e=>{setPw(e.target.value);setErr('');}}
-        placeholder="管理員密碼" autoFocus
-        style={{ width:'100%', background:'rgba(200,150,90,0.06)', border:`1px solid ${err?'rgba(200,80,60,0.5)':'rgba(200,150,90,0.25)'}`, color:'#F0E8DE', fontFamily:"'Noto Serif TC',serif", fontSize:13, padding:'11px 14px', outline:'none', marginBottom: err?8:20, transition:'.25s' }}
-      />
-      {err && <div style={{ color:'#C86050', fontSize:12, marginBottom:16 }}>{err}</div>}
-      <button type="submit" style={{ width:'100%', fontFamily:"'Noto Serif TC',serif", fontSize:14, letterSpacing:'.15em', padding:'12px', background:'transparent', border:'1px solid rgba(245,239,230,0.2)', color:'rgba(245,239,230,0.6)', transition:'.3s' }}>
-        進入後台 →
-      </button>
-    </form>
+
+      {settings.googleClientId && (
+        <div style={{marginBottom:24}}>
+          <div id="googleBtnSide"></div>
+          <div style={{display:'flex', alignItems:'center', gap:10, margin:'20px 0'}}>
+            <div style={{flex:1, height:1, background:'rgba(200,150,90,0.1)'}}></div>
+            <div style={{fontSize:11, color:'rgba(200,150,90,0.3)', letterSpacing:'.1em'}}>或使用密碼</div>
+            <div style={{flex:1, height:1, background:'rgba(200,150,90,0.1)'}}></div>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={submit}>
+        <input
+          type="password" value={pw} onChange={e=>{setPw(e.target.value);setErr('');}}
+          placeholder="管理員密碼" autoFocus
+          style={{ width:'100%', background:'rgba(200,150,90,0.06)', border:`1px solid ${err?'rgba(200,80,60,0.5)':'rgba(200,150,90,0.25)'}`, color:'#F0E8DE', fontFamily:"'Noto Serif TC',serif", fontSize:13, padding:'11px 14px', outline:'none', marginBottom: err?8:20, transition:'.25s' }}
+        />
+        {err && <div style={{ color:'#C86050', fontSize:12, marginBottom:16 }}>{err}</div>}
+        <button type="submit" style={{ width:'100%', fontFamily:"'Noto Serif TC',serif", fontSize:14, letterSpacing:'.15em', padding:'12px', background:'transparent', border:'1px solid rgba(245,239,230,0.2)', color:'rgba(245,239,230,0.6)', transition:'.3s' }}>
+          進入後台 →
+        </button>
+      </form>
+    </div>
   );
 }
 

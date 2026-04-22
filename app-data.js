@@ -18,7 +18,9 @@ const PP = (() => {
   ];
 
   const DEFAULT_SETTINGS = {
-    adminPassword: 'phinnphang2026',
+    adminPassword: 'dfbbf1be2a89dbe5705884b9e81e60f44e20352597ab0b18581b1109aed7cbd1', // hash of 'phinnphang2026'
+    adminEmail: '',
+    googleClientId: '',
     googleScriptUrl: '',
     courseTypes: ['春季體驗課', '秋季體驗課', '企業團體活動', '週末工作坊'],
     defaultAiNamePrompt: '根據以下香精配方，為這款香水創作一個富有詩意的繁體中文名字（2～4個字）。不可包含任何香精原料的名稱。要能喚起一種情境、氛圍或感受，帶有文學性。請提供3個選項，每行一個，只回覆名字本身。',
@@ -248,5 +250,19 @@ const PP = (() => {
     computeRadar,
     syncWorkToSheet,
     generateWorkImage,
+    // Security
+    async hash(text) {
+      if (!text) return '';
+      const msgBuffer = new TextEncoder().encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    },
+    parseJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        return JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+      } catch (e) { return null; }
+    }
   };
 })();
