@@ -51,7 +51,7 @@ function HeroSection({ setPage, tweaks }) {
       </div>
 
       {/* Scroll hint */}
-      <div style={{ position: 'absolute', bottom: 36, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, opacity: 0.6, animation: 'float 3s ease-in-out infinite' }}>
+      <div style={{ position: 'absolute', bottom: 36, left: 'calc(50% - 20px)', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, opacity: 0.6, animation: 'float 3s ease-in-out infinite' }}>
         <div style={{ fontFamily: 'monospace', fontSize: 9, letterSpacing: '0.25em', color: 'var(--gold)' }}>scroll</div>
         <div style={{ width: 1, height: 44, background: 'linear-gradient(to bottom, var(--gold), transparent)' }} />
       </div>
