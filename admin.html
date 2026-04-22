@@ -371,9 +371,9 @@ function Admin() {
   const settings = PP.getSettings();
 
   return (
-    <div style={{display:'flex',minHeight:'100vh'}}>
+    <div style={{display:'flex',height:'100vh',overflow:'hidden'}}>
       {/* Sidebar */}
-      <div style={{width:200,background:'#100E0C',borderRight:'1px solid rgba(200,150,90,0.12)',padding:'28px 0',flexShrink:0}}>
+      <div style={{width:200,background:'#100E0C',borderRight:'1px solid rgba(200,150,90,0.12)',padding:'28px 0',flexShrink:0,position:'relative'}}>
         <div style={{padding:'0 20px',marginBottom:32}}>
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontStyle:'italic',letterSpacing:'.25em',color:'rgba(200,150,90,0.6)'}}>Phinn-Phang</div>
           <div style={{fontSize:13,color:'rgba(245,239,230,0.5)',letterSpacing:'.1em',marginTop:2}}>後台管理</div>
