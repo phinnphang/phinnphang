@@ -67,148 +67,27 @@ function Login({ onLogin }) {
 // ── Ingredient Editor ──────────────────────────────────────────────────────
 function IngredientRow({ ing, onChange, onDelete }) {
   return (
-    <div style={{display:'grid',gridTemplateColumns:'110px 1fr 1fr 130px 36px',gap:6,marginBottom:6,alignItems:'center'}}>
-      <select value={ing.layer} onChange={e=>onChange({...ing,layer:e.target.value})}>
-        <option value="top">前調</option>
-        <option value="middle">中調</option>
-        <option value="base">後調</option>
-      </select>
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 130px 110px 36px',gap:6,marginBottom:6,alignItems:'center'}}>
       <input placeholder="中文名稱" value={ing.name} onChange={e=>onChange({...ing,name:e.target.value})} />
       <input placeholder="English" value={ing.nameEn} onChange={e=>onChange({...ing,nameEn:e.target.value})} />
       <select value={ing.family} onChange={e=>onChange({...ing,family:e.target.value})}>
         {PP.FAMILIES.map(f=><option key={f.id} value={f.id}>{f.zh}</option>)}
+      </select>
+      <select value={ing.layer} onChange={e=>onChange({...ing,layer:e.target.value})}>
+        <option value="top">前調</option>
+        <option value="middle">中調</option>
+        <option value="base">後調</option>
       </select>
       <button className="btn btn-danger" style={{padding:'8px 0',fontSize:14}} onClick={onDelete}>✕</button>
     </div>
   );
 }
 
-// ── CSV Import Modal ───────────────────────────────────────────────────────
-function CsvImportModal({ onClose, onImport }) {
-  const [raw, setRaw] = useState('');
-  const [preview, setPreview] = useState(null);
-  const [error, setError] = useState('');
-
-  // Parse CSV → ingredient rows. Expected headers (case-insensitive, bilingual):
-  // 調性/T/M/L | 中文名稱 | 英文名稱/English | 香調/Family | (其他欄位忽略)
-  const LAYER_MAP = { T:'top', M:'middle', L:'base', 'top':'top','middle':'middle','base':'base','前調':'top','中調':'middle','後調':'base' };
-  const FAMILY_MAP = {
-    'citrus':'citrus','floral':'floral','fruity':'fresh','green':'fresh','tea':'fresh','aldehyde':'fresh','fresh':'fresh',
-    'woody':'woody','mossy':'woody','spicy':'spicy','sweety':'gourmand','gourmand':'gourmand','balsam':'oriental','musk':'oriental','animal':'oriental','oriental':'oriental',
-    '柑橘':'citrus','花香':'floral','果香':'fresh','綠葉':'fresh','茶香':'fresh','木質':'woody','苔蘚':'woody','辛香':'spicy','甜美':'gourmand','美食':'gourmand','香脂':'oriental','動物':'oriental','麝香':'oriental','東方':'oriental','清新':'fresh'
-  };
-
-  const parseCSV = (text) => {
-    // Simple CSV parser handling quoted fields
-    const rows = [];
-    let row = [], cur = '', inQ = false;
-    for (let i=0;i<text.length;i++){
-      const ch = text[i];
-      if (inQ){
-        if (ch === '"' && text[i+1] === '"'){ cur += '"'; i++; }
-        else if (ch === '"'){ inQ = false; }
-        else cur += ch;
-      } else {
-        if (ch === '"') inQ = true;
-        else if (ch === ','){ row.push(cur); cur = ''; }
-        else if (ch === '\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
-        else if (ch === '\r'){ /* skip */ }
-        else cur += ch;
-      }
-    }
-    if (cur.length || row.length) { row.push(cur); rows.push(row); }
-    return rows.filter(r => r.some(c => c && c.trim()));
-  };
-
-  const process = () => {
-    setError('');
-    if (!raw.trim()){ setError('請貼上 CSV 內容'); return; }
-    const rows = parseCSV(raw);
-    if (rows.length < 2){ setError('內容太少，至少需要表頭與一列資料'); return; }
-    const header = rows[0].map(h => h.trim().toLowerCase());
-    // Find columns
-    const findCol = (names) => header.findIndex(h => names.some(n => h === n.toLowerCase() || h.includes(n.toLowerCase())));
-    const layerIdx = findCol(['調性','layer','tml','音符']);
-    const nameIdx  = findCol(['中文名稱','中文','名稱','name (zh)','chinese']);
-    const enIdx    = findCol(['英文名稱','english','name','en']);
-    const famIdx   = findCol(['香調','family','scent']);
-    if (nameIdx < 0 && enIdx < 0){ setError('找不到「中文名稱」或「英文名稱」欄位'); return; }
-
-    const out = [];
-    for (let i=1;i<rows.length;i++){
-      const r = rows[i];
-      const zh = (nameIdx >= 0 ? r[nameIdx] : '').trim();
-      const en = (enIdx >= 0 ? r[enIdx] : '').trim();
-      if (!zh && !en) continue;
-      const layerRaw = (layerIdx >= 0 ? r[layerIdx] : '').trim().toUpperCase();
-      const layer = LAYER_MAP[layerRaw] || LAYER_MAP[layerRaw.toLowerCase()] || 'middle';
-      const famRaw = (famIdx >= 0 ? r[famIdx] : '').trim();
-      // Take first family if multi-value e.g. "Citrus, Fruity"
-      const famFirst = famRaw.split(/[,、\/]/)[0].trim().toLowerCase();
-      const family = FAMILY_MAP[famFirst] || 'floral';
-      out.push({ id: PP.genId(), name: zh, nameEn: en, family, layer });
-    }
-    if (out.length === 0){ setError('沒有可匯入的資料'); return; }
-    setPreview(out);
-  };
-
-  const bg = 'rgba(10,8,6,0.92)';
-  return (
-    <div style={{position:'fixed',inset:0,background:bg,zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-      <div style={{background:'#14110D',border:'1px solid rgba(200,150,90,0.25)',maxWidth:720,width:'100%',maxHeight:'90vh',overflow:'auto',padding:28}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
-          <h3 style={{margin:0}}>匯入 CSV</h3>
-          <button className="btn" onClick={onClose} style={{padding:'6px 12px'}}>關閉</button>
-        </div>
-        {!preview && (
-          <>
-            <div style={{fontSize:12,color:'rgba(245,239,230,0.5)',lineHeight:1.7,marginBottom:12}}>
-              支援欄位：<span style={{color:'rgba(200,150,90,0.9)'}}>調性 (T/M/L)、中文名稱、英文名稱、香調</span><br/>
-              從 Google Sheets 複製儲存格後直接貼上即可；系統會自動對應欄位與香調分類。
-            </div>
-            <textarea rows={12} value={raw} onChange={e=>setRaw(e.target.value)} placeholder="貼上 CSV 內容（含表頭）..." style={{width:'100%',fontFamily:'monospace',fontSize:12}} />
-            {error && <div style={{color:'#D97757',fontSize:12,marginTop:8}}>{error}</div>}
-            <div style={{display:'flex',gap:8,justifyContent:'flex-end',marginTop:12}}>
-              <button className="btn btn-primary" onClick={process}>解析預覽</button>
-            </div>
-          </>
-        )}
-        {preview && (
-          <>
-            <div style={{fontSize:12,color:'rgba(245,239,230,0.6)',marginBottom:10}}>
-              將匯入 <span style={{color:'#D4A574'}}>{preview.length}</span> 種香精（附加至現有清單）
-            </div>
-            <div style={{maxHeight:360,overflow:'auto',border:'1px solid rgba(200,150,90,0.15)',padding:8,marginBottom:12}}>
-              {preview.map((p,i)=>{
-                const fam = PP.FAMILIES.find(f=>f.id===p.family);
-                const layerZh = {top:'前調',middle:'中調',base:'後調'}[p.layer];
-                return (
-                  <div key={i} style={{display:'grid',gridTemplateColumns:'60px 1fr 1fr 90px',gap:8,fontSize:12,padding:'4px 6px',borderBottom:'1px solid rgba(200,150,90,0.08)'}}>
-                    <span style={{color:'rgba(200,150,90,0.7)'}}>{layerZh}</span>
-                    <span style={{color:'#F0E8DE'}}>{p.name || '—'}</span>
-                    <span style={{color:'rgba(245,239,230,0.5)',fontStyle:'italic'}}>{p.nameEn || '—'}</span>
-                    <span style={{color:'rgba(200,150,90,0.6)'}}>{fam?.zh || p.family}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{display:'flex',gap:8,justifyContent:'space-between'}}>
-              <button className="btn" onClick={()=>setPreview(null)}>返回編輯</button>
-              <button className="btn btn-primary" onClick={()=>onImport(preview)}>確認匯入</button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── Course Editor ──────────────────────────────────────────────────────────
 function CourseEditor({ course: init, onSave, onCancel, settings }) {
-  const blank = { id: PP.genId(), name: '', type: settings.courseTypes[0]||'', token: PP.genToken(), ingredients: [], bases: [], hasBase: false, bookable: false, capacity: 6, slots: [] };
+  const blank = { id: PP.genId(), name: '', type: settings.courseTypes[0]||'', date: new Date().toISOString().slice(0,10), token: PP.genToken(), ingredients: [], bases: [], hasBase: false, aiNamePrompt: settings.defaultAiNamePrompt, aiDescPrompt: settings.defaultAiDescPrompt };
   const [c, setC] = useState(init || blank);
   const [newType, setNewType] = useState('');
-  const [showImport, setShowImport] = useState(false);
 
   const addIng = () => setC(p=>({...p, ingredients:[...p.ingredients,{id:PP.genId(),name:'',nameEn:'',family:'citrus',layer:'top'}]}));
   const updateIng = (i,v) => setC(p=>({...p,ingredients:p.ingredients.map((x,j)=>j===i?v:x)}));
@@ -237,11 +116,17 @@ function CourseEditor({ course: init, onSave, onCancel, settings }) {
         </div>
         <div className="field">
           <label>課程類型</label>
-          <select value={c.type} onChange={e=>setC(p=>({...p,type:e.target.value}))}>
-            {settings.courseTypes.map(t=><option key={t} value={t}>{t}</option>)}
-          </select>
+          <div style={{display:'flex',gap:6}}>
+            <select value={c.type} onChange={e=>setC(p=>({...p,type:e.target.value}))} style={{flex:1}}>
+              {settings.courseTypes.map(t=><option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
         </div>
-        <div className="field" style={{gridColumn:'1/-1'}}>
+        <div className="field">
+          <label>課程日期</label>
+          <input type="date" value={c.date} onChange={e=>setC(p=>({...p,date:e.target.value}))} />
+        </div>
+        <div className="field">
           <label>學員連結（Token）</label>
           <div style={{display:'flex',gap:6}}>
             <input value={formulaUrl} readOnly style={{flex:1,fontSize:11,color:'rgba(200,150,90,0.7)'}} onClick={e=>e.target.select()} />
@@ -250,54 +135,20 @@ function CourseEditor({ course: init, onSave, onCancel, settings }) {
         </div>
       </div>
 
-      {/* Bookable slots */}
-      <div className="card" style={{marginBottom:16}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
-          <h3>開放預約</h3>
-          <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',marginBottom:0}}>
-            <input type="checkbox" checked={c.bookable||false} onChange={e=>setC(p=>({...p,bookable:e.target.checked}))} style={{width:'auto'}} />
-            <span style={{fontSize:12,color:'rgba(200,150,90,0.7)'}}>可供學員線上預約</span>
-          </label>
-        </div>
-        {c.bookable && (
-          <div>
-            <div className="field" style={{maxWidth:200}}>
-              <label>每時段人數上限</label>
-              <input type="number" min="1" value={c.capacity||6} onChange={e=>setC(p=>({...p,capacity:Number(e.target.value)}))} />
-            </div>
-            <div style={{fontSize:11,color:'rgba(200,150,90,0.6)',marginBottom:8}}>可預約時段</div>
-            {(c.slots||[]).map((s,i)=>(
-              <div key={s.id} style={{display:'grid',gridTemplateColumns:'1fr 1fr 36px',gap:6,marginBottom:6}}>
-                <input type="date" value={s.date} onChange={e=>setC(p=>({...p,slots:p.slots.map((x,j)=>j===i?{...x,date:e.target.value,id:e.target.value+x.time}:x)}))} />
-                <input type="time" value={s.time} onChange={e=>setC(p=>({...p,slots:p.slots.map((x,j)=>j===i?{...x,time:e.target.value,id:x.date+e.target.value}:x)}))} />
-                <button className="btn btn-danger" style={{padding:'8px 0'}} onClick={()=>setC(p=>({...p,slots:p.slots.filter((_,j)=>j!==i)}))}>✕</button>
-              </div>
-            ))}
-            <button className="btn" onClick={()=>setC(p=>({...p,slots:[...(p.slots||[]),{id:PP.genId(),date:new Date().toISOString().slice(0,10),time:'14:00'}]}))} style={{padding:'5px 14px',fontSize:12}}>+ 新增時段</button>
-          </div>
-        )}
-      </div>
-
       {/* Ingredients */}
       <div className="card" style={{marginBottom:16}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,flexWrap:'wrap',gap:8}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
           <h3>香精清單（{c.ingredients.length} 種）</h3>
-          <div style={{display:'flex',gap:6}}>
-            <button className="btn" onClick={()=>setShowImport(true)} style={{padding:'5px 14px',fontSize:12}}>匯入 CSV</button>
-            <button className="btn" onClick={addIng} style={{padding:'5px 14px',fontSize:12}}>+ 新增香精</button>
-          </div>
+          <button className="btn" onClick={addIng} style={{padding:'5px 14px',fontSize:12}}>+ 新增香精</button>
         </div>
         {c.ingredients.length === 0 && <div style={{color:'rgba(245,239,230,0.3)',fontSize:12,fontStyle:'italic'}}>尚未新增香精</div>}
-        {c.ingredients.length > 0 && (
-          <div style={{fontFamily:'monospace',fontSize:11,color:'rgba(200,150,90,0.4)',display:'grid',gridTemplateColumns:'110px 1fr 1fr 130px 36px',gap:6,marginBottom:6}}>
-            <span>音符位置</span><span>中文名稱</span><span>English</span><span>香調</span><span/>
-          </div>
-        )}
+        <div style={{fontFamily:'monospace',fontSize:11,color:'rgba(200,150,90,0.4)',display:'grid',gridTemplateColumns:'1fr 1fr 130px 110px 36px',gap:6,marginBottom:6}}>
+          <span>中文名稱</span><span>English</span><span>香調</span><span>音符位置</span><span/>
+        </div>
         {c.ingredients.map((ing,i)=>(
           <IngredientRow key={ing.id} ing={ing} onChange={v=>updateIng(i,v)} onDelete={()=>removeIng(i)} />
         ))}
       </div>
-      {showImport && <CsvImportModal onClose={()=>setShowImport(false)} onImport={(rows)=>{setC(p=>({...p,ingredients:[...p.ingredients, ...rows]}));setShowImport(false);}} />}
 
       {/* Bases */}
       <div className="card" style={{marginBottom:16}}>
@@ -322,6 +173,18 @@ function CourseEditor({ course: init, onSave, onCancel, settings }) {
         {!c.hasBase && <div style={{color:'rgba(245,239,230,0.3)',fontSize:12,fontStyle:'italic'}}>未啟用</div>}
       </div>
 
+      {/* AI Prompts */}
+      <div className="card">
+        <h3>AI 指令設定</h3>
+        <div className="field">
+          <label>命名指令（AI 會生成 3 個名字供學員選擇）</label>
+          <textarea rows={4} value={c.aiNamePrompt} onChange={e=>setC(p=>({...p,aiNamePrompt:e.target.value}))} />
+        </div>
+        <div className="field" style={{marginBottom:0}}>
+          <label>作品介紹指令</label>
+          <textarea rows={4} value={c.aiDescPrompt} onChange={e=>setC(p=>({...p,aiDescPrompt:e.target.value}))} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -358,161 +221,6 @@ function CourseList({ courses, onCreate, onEdit, onCopy, onDelete, works }) {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-// ── Reservations View (calendar) ─────────────────────────────────────────
-function ReservationsView() {
-  const [reservations, setReservations] = useState(PP.getReservations());
-  const [ym, setYm] = useState(() => { const d=new Date(); return {y:d.getFullYear(),m:d.getMonth()}; });
-  const [selected, setSelected] = useState(null);
-
-  const refresh = () => setReservations(PP.getReservations());
-
-  const first = new Date(ym.y, ym.m, 1);
-  const startWeekday = first.getDay();
-  const daysInMonth = new Date(ym.y, ym.m+1, 0).getDate();
-  const cells = [];
-  for (let i=0;i<startWeekday;i++) cells.push(null);
-  for (let d=1;d<=daysInMonth;d++) cells.push(d);
-
-  const byDate = {};
-  reservations.forEach(r => {
-    if (r.status === 'cancelled') return;
-    if (!byDate[r.date]) byDate[r.date] = [];
-    byDate[r.date].push(r);
-  });
-
-  const dateStr = (d) => `${ym.y}-${String(ym.m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-  const dayRes = selected ? (byDate[selected]||[]) : [];
-
-  const updateStatus = (r, status) => { PP.saveReservation({...r, status}); refresh(); };
-  const deleteRes = (id) => { if(confirm('確定刪除此預約？')){PP.deleteReservation(id);setSelected(null);refresh();} };
-
-  return (
-    <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
-        <h2>預約管理</h2>
-        <div style={{display:'flex',gap:6,alignItems:'center'}}>
-          <button className="btn" onClick={()=>setYm(p=>({y:p.m===0?p.y-1:p.y,m:p.m===0?11:p.m-1}))}>‹</button>
-          <div style={{minWidth:120,textAlign:'center',fontSize:14,letterSpacing:'.1em',color:'#F0E8DE'}}>{ym.y} 年 {ym.m+1} 月</div>
-          <button className="btn" onClick={()=>setYm(p=>({y:p.m===11?p.y+1:p.y,m:p.m===11?0:p.m+1}))}>›</button>
-        </div>
-      </div>
-
-      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:1,background:'rgba(200,150,90,0.1)',border:'1px solid rgba(200,150,90,0.15)',marginBottom:24}}>
-        {['日','一','二','三','四','五','六'].map(w=>(
-          <div key={w} style={{padding:'8px 0',textAlign:'center',background:'#1E1A16',fontSize:11,letterSpacing:'.2em',color:'rgba(200,150,90,0.6)'}}>{w}</div>
-        ))}
-        {cells.map((d,i)=>{
-          if(!d) return <div key={i} style={{background:'#16100E',minHeight:88}} />;
-          const ds = dateStr(d);
-          const items = byDate[ds]||[];
-          const totalPeople = items.reduce((s,r)=>s+Number(r.people||0),0);
-          const isSel = selected === ds;
-          const isToday = ds === new Date().toISOString().slice(0,10);
-          return (
-            <div key={i} onClick={()=>setSelected(ds)} style={{background:isSel?'#2A1F14':'#1E1A16',minHeight:88,padding:8,cursor:'pointer',border:isToday?'1px solid rgba(200,150,90,0.4)':'none'}}>
-              <div style={{fontSize:11,color:isToday?'#C8965A':'rgba(245,239,230,0.5)',marginBottom:4}}>{d}</div>
-              {items.length>0 && (
-                <div style={{fontSize:10,color:'rgba(200,150,90,0.75)',lineHeight:1.4}}>
-                  {items.slice(0,2).map(r=>(
-                    <div key={r.id} style={{whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
-                      <span style={{color:r.status==='pending'?'#C8965A':r.status==='confirmed'?'#7B9E6E':'rgba(245,239,230,0.5)'}}>●</span> {r.name}
-                    </div>
-                  ))}
-                  {items.length>2 && <div style={{color:'rgba(245,239,230,0.3)'}}>+{items.length-2} 筆</div>}
-                  <div style={{fontSize:9,color:'rgba(245,239,230,0.35)',marginTop:2}}>共 {totalPeople} 人</div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {selected && (
-        <div className="card">
-          <h3 style={{marginBottom:16}}>{selected} 預約</h3>
-          {dayRes.length === 0 && <div style={{color:'rgba(245,239,230,0.3)',fontSize:13}}>此日無預約</div>}
-          {dayRes.map(r=>(
-            <div key={r.id} style={{padding:'14px 0',borderBottom:'1px solid rgba(245,239,230,0.05)',display:'grid',gridTemplateColumns:'1fr auto',gap:12}}>
-              <div>
-                <div style={{fontSize:14,color:'#F0E8DE',marginBottom:4}}>{r.name} · {r.people} 位 · {r.time}</div>
-                <div style={{fontSize:12,color:'rgba(245,239,230,0.5)',marginBottom:4}}>{r.courseName} · {r.email}</div>
-                {r.note && <div style={{fontSize:12,color:'rgba(245,239,230,0.35)',fontStyle:'italic'}}>備註：{r.note}</div>}
-              </div>
-              <div style={{display:'flex',flexDirection:'column',gap:6,alignItems:'flex-end'}}>
-                <select value={r.status} onChange={e=>updateStatus(r,e.target.value)} style={{fontSize:11,padding:'5px 8px',minWidth:110}}>
-                  {PP.RESERVATION_STATUSES.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}
-                </select>
-                <button className="btn btn-danger" style={{padding:'4px 10px',fontSize:11}} onClick={()=>deleteRes(r.id)}>刪除</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Audit View (works approval) ──────────────────────────────────────────
-function AuditView() {
-  const [works, setWorks] = useState(PP.getWorks());
-  const [filter, setFilter] = useState('all');
-  const settings = PP.getSettings();
-  const refresh = () => setWorks(PP.getWorks());
-  const update = (w, patch) => { PP.saveWork({...w, ...patch}); refresh(); };
-
-  let list = works;
-  if (filter === 'willing')   list = works.filter(w => w.willingToSell && !w.published);
-  if (filter === 'published') list = works.filter(w => w.published);
-
-  return (
-    <div>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
-        <h2>作品審核 · 商品上架</h2>
-        <div style={{display:'flex',gap:4}}>
-          {[['all','全部'],['willing','待審核'],['published','已上架']].map(([k,l])=>(
-            <button key={k} className={`btn ${filter===k?'btn-primary':''}`} style={{padding:'6px 14px',fontSize:12}} onClick={()=>setFilter(k)}>{l}</button>
-          ))}
-        </div>
-      </div>
-
-      {list.length===0 && <div style={{color:'rgba(245,239,230,0.3)',textAlign:'center',padding:60,border:'1px dashed rgba(200,150,90,0.15)'}}>沒有符合的作品</div>}
-
-      {list.map(w=>(
-        <div key={w.id} className="card" style={{marginBottom:12}}>
-          <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:16,alignItems:'start',marginBottom:12}}>
-            <div>
-              <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:4}}>
-                <span style={{fontSize:16,color:'#F0E8DE',letterSpacing:'.08em'}}>{w.workName}</span>
-                {w.published && <span className="tag" style={{borderColor:'rgba(123,158,110,0.3)',color:'#7B9E6E'}}>已上架</span>}
-                {w.willingToSell && !w.published && <span className="tag" style={{borderColor:'rgba(200,150,90,0.3)',color:'#C8965A'}}>待審核</span>}
-                {!w.willingToSell && <span className="tag" style={{borderColor:'rgba(245,239,230,0.1)',color:'rgba(245,239,230,0.3)'}}>學員未同意販售</span>}
-              </div>
-              <div style={{fontSize:12,color:'rgba(245,239,230,0.5)'}}>{w.studentName} · {w.courseName} · {w.courseDate}</div>
-            </div>
-            <a href={`work.html?id=${w.id}`} target="_blank" rel="noreferrer" className="btn" style={{padding:'6px 12px',fontSize:12,textDecoration:'none'}}>檢視作品</a>
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'auto auto auto auto 1fr',gap:12,alignItems:'center',padding:12,background:'rgba(200,150,90,0.04)',border:'1px solid rgba(200,150,90,0.1)'}}>
-            <label style={{display:'flex',alignItems:'center',gap:6,marginBottom:0,fontSize:12,cursor:'pointer'}}>
-              <input type="checkbox" checked={!!w.willingToSell} onChange={e=>update(w,{willingToSell:e.target.checked})} style={{width:'auto'}} />
-              <span>同意販售</span>
-            </label>
-            <div style={{width:1,height:20,background:'rgba(200,150,90,0.15)'}} />
-            <span style={{fontSize:11,color:'rgba(200,150,90,0.7)'}}>商品型式</span>
-            <select value={w.productType||''} onChange={e=>update(w,{productType:e.target.value})} style={{fontSize:12,padding:'6px 10px',minWidth:130}}>
-              <option value="">— 未設定 —</option>
-              {(settings.productTypes||[]).map(t=><option key={t} value={t}>{t}</option>)}
-            </select>
-            <label style={{display:'flex',alignItems:'center',gap:6,marginBottom:0,fontSize:12,cursor:'pointer',justifySelf:'end'}}>
-              <input type="checkbox" checked={!!w.published} onChange={e=>update(w,{published:e.target.checked})} disabled={!w.productType} style={{width:'auto'}} />
-              <span style={{color:w.productType?'#F0E8DE':'rgba(245,239,230,0.3)'}}>上架到「探索香氣」</span>
-            </label>
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
@@ -655,11 +363,9 @@ function Admin() {
   if (!authed) return <Login onLogin={()=>setAuthed(true)} />;
 
   const navItems = [
-    { key: 'courses',      label: '課程管理' },
-    { key: 'reservations', label: '預約管理' },
-    { key: 'audit',        label: '作品審核' },
-    { key: 'works',        label: '作品紀錄' },
-    { key: 'settings',     label: '系統設定' },
+    { key: 'courses', label: '課程管理' },
+    { key: 'works',   label: '作品紀錄' },
+    { key: 'settings',label: '系統設定' },
   ];
 
   const settings = PP.getSettings();
@@ -679,14 +385,13 @@ function Admin() {
           </button>
         ))}
         <div style={{position:'absolute',bottom:24,padding:'0 20px',width:'100%'}}>
-          <a href="index.html" style={{display:'block',textAlign:'center',fontFamily:"'Noto Serif TC',serif",fontSize:12,letterSpacing:'.1em',color:'rgba(245,239,230,0.25)',textDecoration:'none'}}>← 回首頁</a>
+          <a href="index.html" style={{display:'block',textAlign:'center',fontFamily:"'Noto Serif TC',serif",fontSize:12,letterSpacing:'.1em',color:'rgba(245,239,230,0.25)',textDecoration:'none',marginBottom:8}}>← 回首頁</a>
+          <button className="btn btn-danger" style={{width:'100%',fontSize:12,padding:'7px'}} onClick={()=>{sessionStorage.removeItem('pp_admin_auth');setAuthed(false)}}>登出</button>
         </div>
       </div>
 
       {/* Main */}
-      <div style={{flex:1,padding:'36px 40px 36px',overflowY:'auto',position:'relative'}}>
-        <button className="btn btn-danger" style={{position:'absolute',top:12,right:16,fontSize:11,padding:'4px 12px',zIndex:5,opacity:.7}} onClick={()=>{sessionStorage.removeItem('pp_admin_auth');window.location.href='index.html'}}>登出</button>
-        <div style={{paddingTop:24}}>
+      <div style={{flex:1,padding:'36px 40px',overflowY:'auto'}}>
         {view==='courses' && !editing && (
           <CourseList courses={courses} works={works}
             onCreate={()=>{setEditing(null);setView('editor')}}
@@ -703,11 +408,8 @@ function Admin() {
             onCancel={()=>{setView('courses');setEditing(null)}}
           />
         )}
-        {view==='reservations' && <ReservationsView />}
-        {view==='audit' && <AuditView />}
         {view==='works' && <WorksList works={works} courses={courses} />}
         {view==='settings' && <SettingsPage />}
-        </div>
       </div>
     </div>
   );

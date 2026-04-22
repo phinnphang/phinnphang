@@ -23,7 +23,7 @@ const CREATORS = [
   { id: 3, nameZh: '吳宇哲', nameEn: 'Yu-Che Wu', tags: ['東方調', '辛香'], quote: '東方香料是我的母語。', works: 9, gradient: 'radial-gradient(ellipse at 50% 30%, #2A2A18 0%, #121208 80%)' },
 ];
 
-function HeroSection({ setPage, openReserve }) {
+function HeroSection({ setPage }) {
   return (
     <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 65%, #3D2005 0%, #201208 35%, #1A1210 75%)' }}>
       {/* Warm orb */}
@@ -43,7 +43,7 @@ function HeroSection({ setPage, openReserve }) {
 
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
           <CTAButton gold onClick={() => setPage('product')}>探索香氣作品</CTAButton>
-          <CTAButton onClick={() => openReserve?.()}>預約體驗課程</CTAButton>
+          <CTAButton>預約體驗課程</CTAButton>
         </div>
       </div>
 
@@ -58,16 +58,8 @@ function HeroSection({ setPage, openReserve }) {
 
 function PrescriptionCard({ item, setPage }) {
   const [hov, setHov] = useState(false);
-  const isDynamic = !!item.id && typeof item.id === 'string' && item.id.length > 5;
-  const handleClick = () => {
-    if (isDynamic) {
-      window.location.href = `work.html?id=${item.id}`;
-    } else {
-      setPage('product');
-    }
-  };
   return (
-    <div onMouseOver={() => setHov(true)} onMouseOut={() => setHov(false)} onClick={handleClick}
+    <div onMouseOver={() => setHov(true)} onMouseOut={() => setHov(false)} onClick={() => setPage('product')}
       style={{ minWidth: 260, maxWidth: 290, flexShrink: 0, background: hov ? '#2A1E12' : '#231810', border: `1px solid ${hov ? 'rgba(200,150,90,0.45)' : 'rgba(200,150,90,0.18)'}`, padding: '28px 26px', cursor: 'pointer', transition: 'all 0.35s ease', boxShadow: hov ? '0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(200,150,90,0.06)' : '0 4px 20px rgba(0,0,0,0.3)' }}>
       {/* Rx header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
@@ -102,20 +94,13 @@ function PrescriptionCard({ item, setPage }) {
 }
 
 function PrescriptionsSection({ setPage }) {
-  const published = PP.getPublishedWorks();
-  const items = published.length > 0 ? published.slice(0, 6).map(w => ({
-    id: w.id, nameZh: w.workName, nameEn: w.studentName,
-    type: w.productType, family: '學員配方',
-    notes: (w.formula || []).slice(0, 3).map(f => `${f.name}${f.nameEn ? ' ' + f.nameEn : ''}`),
-    price: w.price || 1280, vol: w.vol || 30,
-  })) : PRESCRIPTIONS;
   return (
     <section style={{ padding: 'clamp(64px, 8vw, 120px) 0', position: 'relative' }}>
       <div style={{ padding: '0 clamp(20px, 5vw, 80px)', marginBottom: 48 }}>
         <SectionTitle zh="本月香氣處方箋" en="Monthly Fragrance Prescriptions" center />
       </div>
       <div style={{ display: 'flex', gap: 24, overflowX: 'auto', padding: '8px clamp(20px, 5vw, 80px) 24px', scrollbarWidth: 'none' }}>
-        {items.map(item => <PrescriptionCard key={item.id} item={item} setPage={setPage} />)}
+        {PRESCRIPTIONS.map(item => <PrescriptionCard key={item.id} item={item} setPage={setPage} />)}
       </div>
     </section>
   );
@@ -184,7 +169,7 @@ function CreatorsSection() {
   );
 }
 
-function FooterCTA({ openReserve }) {
+function FooterCTA() {
   return (
     <section style={{ padding: 'clamp(80px, 10vw, 140px) clamp(20px, 5vw, 80px)', textAlign: 'center', position: 'relative', borderTop: '1px solid rgba(200,150,90,0.1)', background: 'radial-gradient(ellipse at 50% 80%, rgba(61,46,32,0.4) 0%, transparent 70%)' }}>
       <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.35em', color: 'rgba(200,150,90,0.6)', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 16 }}>Experience the Craft</div>
@@ -195,7 +180,7 @@ function FooterCTA({ openReserve }) {
         每月限額開班。在 Phinn-Phang 的香氣書房裡,<br />
         你將親手調製屬於自己的第一瓶香水。
       </p>
-      <CTAButton gold onClick={() => openReserve?.()}>了解課程內容</CTAButton>
+      <CTAButton gold>了解課程內容</CTAButton>
 
       <div style={{ marginTop: 80, paddingTop: 40, borderTop: '1px solid rgba(245,239,230,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div>
@@ -210,14 +195,14 @@ function FooterCTA({ openReserve }) {
   );
 }
 
-function HomePage({ setPage, openReserve }) {
+function HomePage({ setPage }) {
   return (
     <div>
-      <HeroSection setPage={setPage} openReserve={openReserve} />
+      <HeroSection setPage={setPage} />
       <PrescriptionsSection setPage={setPage} />
       {/* <FamiliesSection /> */}
       {/* <CreatorsSection /> */}
-      <FooterCTA openReserve={openReserve} />
+      <FooterCTA />
     </div>
   );
 }

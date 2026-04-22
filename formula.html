@@ -212,9 +212,8 @@ function StepNaming({ names, onSelect }) {
   const [custom, setCustom] = useState('');
   const [sel, setSel] = useState(null);
   const [mode, setMode] = useState('ai'); // ai | custom
-  const [willing, setWilling] = useState(false);
 
-  const confirm = () => onSelect(mode==='custom' ? custom.trim() : sel, willing);
+  const confirm = () => onSelect(mode==='custom' ? custom.trim() : sel);
 
   return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
@@ -249,15 +248,6 @@ function StepNaming({ names, onSelect }) {
           placeholder="輸入自訂名稱"
           style={{width:'100%',textAlign:'center',fontSize:18,letterSpacing:'.12em',marginBottom:28,background: mode==='custom'&&custom?'rgba(200,150,90,0.06)':'rgba(245,239,230,0.03)',borderColor:mode==='custom'&&custom?'rgba(200,150,90,0.5)':'rgba(245,239,230,0.12)'}}
         />
-
-        {/* Willing to sell */}
-        <label style={{display:'flex',alignItems:'flex-start',gap:12,padding:'16px 20px',background:willing?'rgba(200,150,90,0.06)':'rgba(245,239,230,0.02)',border:`1px solid ${willing?'rgba(200,150,90,0.3)':'rgba(245,239,230,0.08)'}`,cursor:'pointer',marginBottom:28,transition:'.25s'}}>
-          <input type="checkbox" checked={willing} onChange={e=>setWilling(e.target.checked)} style={{marginTop:3,accentColor:'#C8965A'}} />
-          <div>
-            <div style={{fontSize:13,color:'#F0E8DE',letterSpacing:'.08em',marginBottom:4}}>我同意將此作品開放為商品販售</div>
-            <div style={{fontSize:11,color:'rgba(245,239,230,0.4)',lineHeight:1.7}}>Phinn-Phang 將審核你的配方，決定商品型式（空間噴霧、織品噴霧等）並上架至「探索香氣」產品頁。未勾選也不影響作品記錄，日後仍可變更。</div>
-          </div>
-        </label>
 
         <div style={{textAlign:'center'}}>
           <GoldBtn onClick={confirm} disabled={mode==='ai'?!sel:!custom.trim()}>確認這個名字 →</GoldBtn>
@@ -306,7 +296,7 @@ function FormulaApp() {
     setStep('naming');
   };
 
-  const handleNaming = async (workName, willingToSell) => {
+  const handleNaming = async (workName) => {
     const work = {
       id:          PP.genId(),
       courseId:    course.id,
@@ -315,9 +305,6 @@ function FormulaApp() {
       courseType:  course.type,
       studentName: student,
       workName,
-      willingToSell: !!willingToSell,
-      published:   false,
-      productType: '',
       formula,
       base,
       totalDrops,
