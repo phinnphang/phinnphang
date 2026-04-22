@@ -28,6 +28,7 @@ h3{font-size:14px;font-weight:400;letter-spacing:.1em;color:rgba(200,150,90,0.8)
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 <script src="app-data.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <div id="root"></div>
@@ -35,15 +36,46 @@ h3{font-size:14px;font-weight:400;letter-spacing:.1em;color:rgba(200,150,90,0.8)
 const { useState, useEffect, useRef } = React;
 
 // ── Login ──────────────────────────────────────────────────────────────────
+// ── Login ──────────────────────────────────────────────────────────────────
 function Login({ onLogin }) {
   const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
-  const submit = (e) => {
-    e.preventDefault();
-    const s = PP.getSettings();
-    if (pw === s.adminPassword) onLogin();
-    else setErr('密碼錯誤，請再試一次');
+  const settings = PP.getSettings();
+
+  useEffect(() => {
+    if (settings.googleClientId && window.google) {
+      window.google.accounts.id.initialize({
+        client_id: settings.googleClientId,
+        callback: handleGoogleLogin
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById("googleBtn"),
+        { theme: "outline", size: "large", width: 268, text: "signin_with" }
+      );
+    }
+  }, [settings.googleClientId]);
+
+  const handleGoogleLogin = (response) => {
+    const user = PP.parseJwt(response.credential);
+    if (user && user.email === settings.adminEmail) {
+      sessionStorage.setItem('pp_admin_auth', '1');
+      onLogin();
+    } else {
+      setErr('此 Google 帳號未獲得授權');
+    }
   };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    const h = await PP.hash(pw);
+    if (h === settings.adminPassword) {
+      sessionStorage.setItem('pp_admin_auth', '1');
+      onLogin();
+    } else {
+      setErr('密碼錯誤，請再試一次');
+    }
+  };
+
   return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'radial-gradient(ellipse at 50% 40%, #2A1A0E 0%, #131110 70%)'}}>
       <div style={{width:340,padding:'40px 36px',background:'#1A1612',border:'1px solid rgba(200,150,90,0.2)'}}>
@@ -51,6 +83,21 @@ function Login({ onLogin }) {
           <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:13,fontStyle:'italic',letterSpacing:'.3em',color:'rgba(200,150,90,0.7)',marginBottom:8}}>Phinn-Phang</div>
           <h2 style={{fontSize:16,letterSpacing:'.2em'}}>後台管理</h2>
         </div>
+        
+        {settings.googleClientId && (
+          <div style={{marginBottom:24, display:'flex', justifyContent:'center'}}>
+            <div id="googleBtn"></div>
+          </div>
+        )}
+
+        {settings.googleClientId && (
+          <div style={{display:'flex', alignItems:'center', gap:10, marginBottom:24}}>
+            <div style={{flex:1, height:1, background:'rgba(200,150,90,0.15)'}}></div>
+            <div style={{fontSize:11, color:'rgba(200,150,90,0.4)', letterSpacing:'.1em'}}>或使用密碼</div>
+            <div style={{flex:1, height:1, background:'rgba(200,150,90,0.15)'}}></div>
+          </div>
+        )}
+
         <form onSubmit={submit}>
           <div className="field">
             <label>管理員密碼</label>
@@ -261,10 +308,21 @@ function WorksList({ works, courses }) {
 // ── Settings ───────────────────────────────────────────────────────────────
 function SettingsPage({ onSaved }) {
   const [s, setS] = useState(PP.getSettings());
+  const [newPw, setNewPw] = useState('');
   const [newType, setNewType] = useState('');
   const [msg, setMsg] = useState('');
 
-  const save = () => { PP.saveSettings(s); setMsg('已儲存'); setTimeout(()=>setMsg(''),2500); };
+  const save = async () => {
+    let nextS = { ...s };
+    if (newPw) {
+      nextS.adminPassword = await PP.hash(newPw);
+    }
+    PP.saveSettings(nextS);
+    setS(nextS);
+    setNewPw('');
+    setMsg('已儲存');
+    setTimeout(()=>setMsg(''),2500);
+  };
   const addType = () => { if(!newType.trim()) return; setS(p=>({...p,courseTypes:[...p.courseTypes,newType.trim()]})); setNewType(''); };
   const removeType = (t) => setS(p=>({...p,courseTypes:p.courseTypes.filter(x=>x!==t)}));
 
@@ -280,9 +338,19 @@ function SettingsPage({ onSaved }) {
 
       <div className="card" style={{marginBottom:16}}>
         <h3>帳號安全</h3>
+        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
+          <div className="field">
+            <label>授權管理員 Email (Google 登入用)</label>
+            <input value={s.adminEmail} onChange={e=>setS(p=>({...p,adminEmail:e.target.value}))} placeholder="yourname@gmail.com" />
+          </div>
+          <div className="field">
+            <label>Google Client ID</label>
+            <input value={s.googleClientId} onChange={e=>setS(p=>({...p,googleClientId:e.target.value}))} placeholder="123456...apps.googleusercontent.com" />
+          </div>
+        </div>
         <div className="field" style={{marginBottom:0}}>
-          <label>管理員密碼</label>
-          <input type="password" value={s.adminPassword} onChange={e=>setS(p=>({...p,adminPassword:e.target.value}))} />
+          <label>設定新密碼 (備援用，留空則不修改)</label>
+          <input type="password" value={newPw} onChange={e=>setNewPw(e.target.value)} placeholder="輸入新密碼..." />
         </div>
       </div>
 
