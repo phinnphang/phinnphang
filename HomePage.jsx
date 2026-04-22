@@ -51,9 +51,9 @@ function HeroSection({ setPage, tweaks }) {
       </div>
 
       {/* Scroll hint */}
-      <div style={{ position: 'absolute', bottom: 36, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, opacity: 0.35, animation: 'float 3s ease-in-out infinite' }}>
+      <div style={{ position: 'absolute', bottom: 36, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, opacity: 0.6, animation: 'float 3s ease-in-out infinite' }}>
         <div style={{ fontFamily: 'monospace', fontSize: 9, letterSpacing: '0.25em', color: 'var(--gold)' }}>scroll</div>
-        <div style={{ width: 1, height: 44, background: 'linear-gradient(to bottom, rgba(200,150,90,0.6), transparent)' }} />
+        <div style={{ width: 1, height: 44, background: 'linear-gradient(to bottom, var(--gold), transparent)' }} />
       </div>
     </section>
   );
@@ -178,7 +178,7 @@ function FooterCTA({ tweaks }) {
     : tweaks?.theme === 'light';
   return (
     <section style={{ padding: 'clamp(80px, 10vw, 140px) clamp(20px, 5vw, 80px)', textAlign: 'center', position: 'relative', borderTop: '1px solid var(--gold2)', background: isLight ? 'radial-gradient(ellipse at 50% 80%, rgba(232,181,160,0.15) 0%, transparent 70%)' : 'radial-gradient(ellipse at 50% 80%, rgba(61,46,32,0.4) 0%, transparent 70%)', transition: 'background 0.4s ease' }}>
-      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.35em', color: 'rgba(200,150,90,0.6)', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 16 }}>Experience the Craft</div>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.35em', color: 'var(--gold)', opacity: 0.85, textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 16 }}>Experience the Craft</div>
       <h2 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 300, color: 'var(--text-main)', letterSpacing: '0.15em', lineHeight: 1.4, marginBottom: 20 }}>
         預約體驗課程
       </h2>
@@ -190,8 +190,8 @@ function FooterCTA({ tweaks }) {
 
       <div style={{ marginTop: 80, paddingTop: 40, borderTop: '1px solid rgba(245,239,230,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '0.2em', color: 'rgba(245,239,230,0.5)', marginBottom: 4 }}>聞香</div>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.3em', fontStyle: 'italic', color: 'rgba(200,150,90,0.45)' }}>Phinn-Phang · 調香體驗教室</div>
+          <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '0.2em', color: 'var(--text-mute)', marginBottom: 4 }}>聞香</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.3em', fontStyle: 'italic', color: 'var(--gold)', opacity: 0.8 }}>Phinn-Phang · 調香體驗教室</div>
         </div>
         <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(245,239,230,0.2)', letterSpacing: '0.1em' }}>
           © 2026 Phinn-Phang. All rights reserved.

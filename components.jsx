@@ -17,9 +17,9 @@ function ImagePlaceholder({ label, sublabel, style, gradient }) {
 function SectionTitle({ zh, en, center }) {
   return (
     <div style={{ textAlign: center ? 'center' : 'left', marginBottom: 48 }}>
-      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.3em', color: 'rgba(200,150,90,0.65)', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 10 }}>{en}</div>
-      <h2 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(22px, 2.8vw, 34px)', fontWeight: 300, color: 'var(--cream)', letterSpacing: '0.12em', lineHeight: 1.3 }}>{zh}</h2>
-      <div style={{ width: 32, height: 1, background: 'rgba(200,150,90,0.45)', marginTop: 16, ...(center ? { margin: '16px auto 0' } : {}) }} />
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.3em', color: 'var(--gold)', opacity: 0.85, textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 10 }}>{en}</div>
+      <h2 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(22px, 2.8vw, 34px)', fontWeight: 300, color: 'var(--text-main)', letterSpacing: '0.12em', lineHeight: 1.3 }}>{zh}</h2>
+      <div style={{ width: 32, height: 1, background: 'var(--gold)', opacity: 0.45, marginTop: 16, ...(center ? { margin: '16px auto 0' } : {}) }} />
     </div>
   );
 }
