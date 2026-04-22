@@ -17,9 +17,9 @@ function ImagePlaceholder({ label, sublabel, style, gradient }) {
 function SectionTitle({ zh, en, center }) {
   return (
     <div style={{ textAlign: center ? 'center' : 'left', marginBottom: 48 }}>
-      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.3em', color: 'rgba(200,150,90,0.65)', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 10 }}>{en}</div>
-      <h2 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(22px, 2.8vw, 34px)', fontWeight: 300, color: '#F5EFE6', letterSpacing: '0.12em', lineHeight: 1.3 }}>{zh}</h2>
-      <div style={{ width: 32, height: 1, background: 'rgba(200,150,90,0.45)', marginTop: 16, ...(center ? { margin: '16px auto 0' } : {}) }} />
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.3em', color: 'var(--gold)', opacity: 0.85, textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 10 }}>{en}</div>
+      <h2 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(22px, 2.8vw, 34px)', fontWeight: 300, color: 'var(--text-main)', letterSpacing: '0.12em', lineHeight: 1.3 }}>{zh}</h2>
+      <div style={{ width: 32, height: 1, background: 'var(--gold)', opacity: 0.45, marginTop: 16, ...(center ? { margin: '16px auto 0' } : {}) }} />
     </div>
   );
 }
@@ -45,8 +45,8 @@ function CTAButton({ children, onClick, gold, style }) {
   const [hov, setHov] = useState(false);
   const base = {
     fontFamily: "'Noto Serif TC', serif", fontWeight: 300, fontSize: 13, letterSpacing: '0.2em',
-    background: 'transparent', border: `1px solid ${gold ? (hov ? '#C8965A' : 'rgba(200,150,90,0.5)') : (hov ? 'rgba(245,239,230,0.4)' : 'rgba(245,239,230,0.18)')}`,
-    color: gold ? (hov ? '#C8965A' : '#F5EFE6') : (hov ? 'rgba(245,239,230,0.9)' : 'rgba(245,239,230,0.5)'),
+    background: 'transparent', border: `1px solid ${gold ? (hov ? 'var(--gold)' : 'var(--gold2)') : (hov ? 'var(--text-sub)' : 'var(--gold2)')}`,
+    color: gold ? (hov ? 'var(--gold)' : 'var(--text-main)') : (hov ? 'var(--text-main)' : 'var(--text-sub)'),
     padding: '13px 36px', transition: 'all 0.3s ease', cursor: 'pointer', ...style,
   };
   return <button style={base} onMouseOver={() => setHov(true)} onMouseOut={() => setHov(false)} onClick={onClick}>{children}</button>;
@@ -205,7 +205,7 @@ function PortalModal({ onClose }) {
   );
 }
 
-function Header({ setPage, cartCount = 0, tweaks, onPortal }) {
+function Header({ setPage, cartCount = 0, tweaks, setTweaks, onPortal }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
@@ -219,19 +219,50 @@ function Header({ setPage, cartCount = 0, tweaks, onPortal }) {
     { label: '關於 Phinn-Phang', page: 'about' },
   ];
 
+  const getEffectiveIsLight = () => {
+    if (tweaks.theme === 'system') {
+      return !window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return tweaks.theme === 'light';
+  };
+
+  const isLight = getEffectiveIsLight();
+  const toggleTheme = () => {
+    // Cycle: system -> light -> dark -> system
+    let nextTheme = 'system';
+    if (tweaks.theme === 'system') nextTheme = 'light';
+    else if (tweaks.theme === 'light') nextTheme = 'dark';
+    else if (tweaks.theme === 'dark') nextTheme = 'system';
+
+    const next = { ...tweaks, theme: nextTheme };
+    setTweaks(next);
+    if (window.parent) window.parent.postMessage({ type: '__edit_mode_set_keys', edits: next }, '*');
+  };
+
+  const getThemeTitle = () => {
+    if (tweaks.theme === 'system') return "目前：跟隨系統 (點擊切換至明亮)";
+    if (tweaks.theme === 'light') return "目前：手動明亮 (點擊切換至深色)";
+    return "目前：手動深色 (點擊切換至自動)";
+  };
+
   return (
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
       height: 72, padding: '0 clamp(20px, 5vw, 60px)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      background: scrolled ? 'rgba(26,22,18,0.94)' : 'transparent',
-      borderBottom: scrolled ? '1px solid rgba(200,150,90,0.12)' : '1px solid transparent',
+      background: scrolled ? 'var(--bg)' : 'transparent',
+      opacity: scrolled ? 0.96 : 1,
+      borderBottom: scrolled ? '1px solid var(--gold2)' : '1px solid transparent',
       backdropFilter: scrolled ? 'blur(14px)' : 'none',
       transition: 'all 0.45s ease',
     }}>
       {/* Logo */}
       <div onClick={() => setPage('home')} style={{ cursor: 'pointer' }}>
-        <img src="uploads/Phinn-phang_wh-7ca1d186.png" alt="Phinn-Phang scent lab" style={{ height: 38, width: 'auto', display: 'block', objectFit: 'contain' }} />
+        <img 
+          src={isLight ? "uploads/Phinn-phang.png" : "uploads/Phinn-phang_wh-7ca1d186.png"} 
+          alt="Phinn-Phang scent lab" 
+          style={{ height: 38, width: 'auto', display: 'block', objectFit: 'contain', transition: '0.3s' }} 
+        />
       </div>
 
       {/* Nav */}
@@ -239,17 +270,45 @@ function Header({ setPage, cartCount = 0, tweaks, onPortal }) {
         {navLinks.map(l => (
           <NavBtn key={l.label} label={l.label} onClick={() => setPage(l.page)} />
         ))}
-        <button onClick={onPortal} style={{ background: 'none', border: '1px solid rgba(200,150,90,0.3)', color: 'rgba(200,150,90,0.75)', fontFamily:"'Noto Serif TC',serif", fontSize: 12, letterSpacing: '.12em', padding: '5px 14px', transition: '.25s' }}>課程入口</button>
-        <button onClick={() => {}} style={{ background: 'none', border: 'none', color: 'rgba(245,239,230,0.6)', display: 'flex', alignItems: 'center', gap: 6, padding: 0, position: 'relative' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 01-8 0"/>
-          </svg>
-          {cartCount > 0 && (
-            <span style={{ position: 'absolute', top: -6, right: -8, width: 15, height: 15, borderRadius: '50%', background: '#C8965A', color: '#1A1612', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{cartCount}</span>
-          )}
-        </button>
+        <button onClick={onPortal} style={{ background: 'none', border: '1px solid var(--gold)', color: 'var(--gold)', fontFamily:"'Noto Serif TC',serif", fontSize: 12, letterSpacing: '.12em', padding: '5px 14px', transition: '.25s', cursor: 'pointer' }}>課程入口</button>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginLeft: 8 }}>
+          {/* Theme Toggle */}
+          <button onClick={toggleTheme} style={{ background: 'none', border: 'none', color: 'var(--text-sub)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4, transition: '0.3s', position: 'relative' }} title={getThemeTitle()}>
+            {isLight ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            )}
+            {tweaks.theme === 'system' && (
+              <div style={{ position: 'absolute', top: 0, right: 0, width: 5, height: 5, borderRadius: '50%', background: 'var(--gold)', boxShadow: '0 0 5px var(--gold)' }} />
+            )}
+          </button>
+
+          {/* Cart */}
+          <button onClick={() => {}} style={{ background: 'none', border: 'none', color: 'var(--text-sub)', display: 'flex', alignItems: 'center', gap: 6, padding: 0, position: 'relative', cursor: 'pointer' }}>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 01-8 0"/>
+            </svg>
+            {cartCount > 0 && (
+              <span style={{ position: 'absolute', top: -6, right: -8, width: 15, height: 15, borderRadius: '50%', background: 'var(--gold)', color: 'var(--bg)', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{cartCount}</span>
+            )}
+          </button>
+        </div>
       </nav>
     </header>
   );
@@ -260,7 +319,7 @@ function NavBtn({ label, onClick }) {
   return (
     <button onClick={onClick} onMouseOver={() => setHov(true)} onMouseOut={() => setHov(false)} style={{
       background: 'none', border: 'none', fontFamily: "'Noto Serif TC', serif", fontSize: 13, fontWeight: 300,
-      letterSpacing: '0.08em', color: hov ? '#C8965A' : 'rgba(245,239,230,0.6)', transition: 'color 0.3s', padding: '4px 0',
+      letterSpacing: '0.08em', color: hov ? 'var(--gold)' : 'var(--nav-link)', transition: 'color 0.3s', padding: '4px 0', cursor: 'pointer'
     }}>{label}</button>
   );
 }

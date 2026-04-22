@@ -23,22 +23,25 @@ const CREATORS = [
   { id: 3, nameZh: '吳宇哲', nameEn: 'Yu-Che Wu', tags: ['東方調', '辛香'], quote: '東方香料是我的母語。', works: 9, gradient: 'radial-gradient(ellipse at 50% 30%, #2A2A18 0%, #121208 80%)' },
 ];
 
-function HeroSection({ setPage }) {
+function HeroSection({ setPage, tweaks }) {
+  const isLight = tweaks?.theme === 'system' 
+    ? !window.matchMedia('(prefers-color-scheme: dark)').matches
+    : tweaks?.theme === 'light';
   return (
-    <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 65%, #3D2005 0%, #201208 35%, #1A1210 75%)' }}>
+    <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', background: 'var(--hero-bg)', transition: 'background 0.4s ease' }}>
       {/* Warm orb */}
-      <div style={{ position: 'absolute', width: '45vw', height: '45vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(190,110,30,0.1) 0%, transparent 70%)', top: '18%', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', width: '20vw', height: '20vw', borderRadius: '50%', background: 'radial-gradient(circle, rgba(200,150,90,0.06) 0%, transparent 70%)', top: '30%', left: '40%', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', width: '45vw', height: '45vw', borderRadius: '50%', background: isLight ? 'radial-gradient(circle, rgba(166,124,74,0.06) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(190,110,30,0.1) 0%, transparent 70%)', top: '18%', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', opacity: isLight ? 0.4 : 1 }} />
+      <div style={{ position: 'absolute', width: '20vw', height: '20vw', borderRadius: '50%', background: 'radial-gradient(circle, var(--gold3) 0%, transparent 70%)', top: '30%', left: '40%', pointerEvents: 'none' }} />
 
       <div style={{ textAlign: 'center', zIndex: 1, maxWidth: 680, padding: '80px 24px 0', animation: 'fadeUp 1s ease both' }}>
-        <img src="uploads/Phinn-phang_wh-7ca1d186.png" alt="Phinn-Phang scent lab" style={{ height: 'clamp(60px, 10vw, 110px)', width: 'auto', marginBottom: 32, filter: 'drop-shadow(0 0 40px rgba(200,130,60,0.2))' }} />
-        <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '3.5px', color: 'rgb(246,240,231)', marginBottom: 44 }}>
+        <img src={isLight ? "uploads/Phinn-phang.png" : "uploads/Phinn-phang_wh-7ca1d186.png"} alt="Phinn-Phang scent lab" style={{ height: 'clamp(60px, 10vw, 110px)', width: 'auto', marginBottom: 32, filter: isLight ? 'none' : 'drop-shadow(0 0 40px rgba(200,130,60,0.2))', transition: '0.3s' }} />
+        <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '3.5px', color: 'var(--text-main)', marginBottom: 44 }}>
           來自台語的「聞香」<br />同時也有湊湊熱鬧的意思
         </div>
 
         <div style={{ width: 36, height: 1, background: 'rgba(200,150,90,0.4)', margin: '0 auto 36px' }} />
 
-        <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, fontWeight: 300, color: 'rgba(245,239,230,0.55)', lineHeight: 2.1, letterSpacing: '0.06em', maxWidth: 460, margin: '0 auto 52px', height: 0, overflow: 'hidden' }}>
+        <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, fontWeight: 300, color: 'var(--text-sub)', lineHeight: 2.1, letterSpacing: '0.06em', maxWidth: 460, margin: '0 auto 52px', height: 0, overflow: 'hidden' }}>
         </p>
 
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -48,9 +51,9 @@ function HeroSection({ setPage }) {
       </div>
 
       {/* Scroll hint */}
-      <div style={{ position: 'absolute', bottom: 36, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, opacity: 0.35, animation: 'float 3s ease-in-out infinite' }}>
-        <div style={{ fontFamily: 'monospace', fontSize: 9, letterSpacing: '0.25em', color: '#C8965A' }}>scroll</div>
-        <div style={{ width: 1, height: 44, background: 'linear-gradient(to bottom, rgba(200,150,90,0.6), transparent)' }} />
+      <div style={{ position: 'absolute', bottom: 36, left: 'calc(50% - 20px)', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, opacity: 0.6, animation: 'float 3s ease-in-out infinite' }}>
+        <div style={{ fontFamily: 'monospace', fontSize: 9, letterSpacing: '0.25em', color: 'var(--gold)' }}>scroll</div>
+        <div style={{ width: 1, height: 44, background: 'linear-gradient(to bottom, var(--gold), transparent)' }} />
       </div>
     </section>
   );
@@ -60,7 +63,7 @@ function PrescriptionCard({ item, setPage }) {
   const [hov, setHov] = useState(false);
   return (
     <div onMouseOver={() => setHov(true)} onMouseOut={() => setHov(false)} onClick={() => setPage('product')}
-      style={{ minWidth: 260, maxWidth: 290, flexShrink: 0, background: hov ? '#2A1E12' : '#231810', border: `1px solid ${hov ? 'rgba(200,150,90,0.45)' : 'rgba(200,150,90,0.18)'}`, padding: '28px 26px', cursor: 'pointer', transition: 'all 0.35s ease', boxShadow: hov ? '0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(200,150,90,0.06)' : '0 4px 20px rgba(0,0,0,0.3)' }}>
+      style={{ minWidth: 260, maxWidth: 290, flexShrink: 0, background: hov ? 'var(--card-hov-bg)' : 'var(--card-bg)', border: `1px solid ${hov ? 'var(--gold)' : 'var(--gold2)'}`, padding: '28px 26px', cursor: 'pointer', transition: 'all 0.35s ease', boxShadow: hov ? '0 8px 40px rgba(0,0,0,0.2), 0 0 30px var(--gold3)' : '0 4px 20px rgba(0,0,0,0.1)' }}>
       {/* Rx header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, fontStyle: 'italic', color: '#E8B5A0', letterSpacing: '0.05em' }}>℞</div>
@@ -69,23 +72,23 @@ function PrescriptionCard({ item, setPage }) {
 
       <div style={{ borderTop: '1px dashed rgba(200,150,90,0.2)', marginBottom: 18 }} />
 
-      <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 22, fontWeight: 400, color: '#F5EFE6', letterSpacing: '0.1em', marginBottom: 4 }}>{item.nameZh}</div>
-      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, fontStyle: 'italic', color: 'rgba(200,150,90,0.6)', letterSpacing: '0.1em', marginBottom: 22 }}>{item.nameEn}</div>
+      <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 22, fontWeight: 400, color: 'var(--text-main)', letterSpacing: '0.1em', marginBottom: 4 }}>{item.nameZh}</div>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, fontStyle: 'italic', color: 'var(--gold)', fontWeight: 500, letterSpacing: '0.1em', marginBottom: 22 }}>{item.nameEn}</div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 24 }}>
         {item.notes.map(n => (
-          <div key={n} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: 'rgba(245,239,230,0.55)', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div key={n} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: 'var(--text-sub)', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(200,150,90,0.5)', flexShrink: 0, display: 'inline-block' }} />
             {n}
           </div>
         ))}
       </div>
 
-      <div style={{ borderTop: '1px dashed rgba(200,150,90,0.2)', paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 11, color: 'rgba(245,239,230,0.4)', letterSpacing: '0.05em' }}>
+      <div style={{ borderTop: '1px dashed var(--gold2)', paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 11, color: 'var(--text-mute)', letterSpacing: '0.05em' }}>
           {item.type} · {item.vol}ml
         </div>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: '#C8965A', letterSpacing: '0.05em' }}>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: 'var(--gold)', letterSpacing: '0.05em' }}>
           NT${item.price.toLocaleString()}
         </div>
       </div>
@@ -147,8 +150,8 @@ function CreatorCard({ c }) {
       <div style={{ width: 88, height: 88, borderRadius: '50%', background: c.gradient, margin: '0 auto 20px', border: '1px solid rgba(200,150,90,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(200,150,90,0.3)', letterSpacing: '0.1em' }}>肖像</div>
       </div>
-      <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 18, fontWeight: 400, letterSpacing: '0.15em', color: '#F5EFE6', marginBottom: 3 }}>{c.nameZh}</div>
-      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, fontStyle: 'italic', letterSpacing: '0.2em', color: 'rgba(200,150,90,0.55)', marginBottom: 14 }}>{c.nameEn}</div>
+      <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 18, fontWeight: 400, letterSpacing: '0.15em', color: 'var(--text-main)', marginBottom: 3 }}>{c.nameZh}</div>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, fontStyle: 'italic', letterSpacing: '0.2em', color: 'var(--gold)', fontWeight: 500, marginBottom: 14 }}>{c.nameEn}</div>
       <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 18, flexWrap: 'wrap' }}>
         {c.tags.map(t => <Tag key={t} variant="gold">{t}</Tag>)}
       </div>
@@ -169,14 +172,17 @@ function CreatorsSection() {
   );
 }
 
-function FooterCTA() {
+function FooterCTA({ tweaks }) {
+  const isLight = tweaks?.theme === 'system' 
+    ? !window.matchMedia('(prefers-color-scheme: dark)').matches
+    : tweaks?.theme === 'light';
   return (
-    <section style={{ padding: 'clamp(80px, 10vw, 140px) clamp(20px, 5vw, 80px)', textAlign: 'center', position: 'relative', borderTop: '1px solid rgba(200,150,90,0.1)', background: 'radial-gradient(ellipse at 50% 80%, rgba(61,46,32,0.4) 0%, transparent 70%)' }}>
-      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.35em', color: 'rgba(200,150,90,0.6)', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 16 }}>Experience the Craft</div>
-      <h2 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 300, color: '#F5EFE6', letterSpacing: '0.15em', lineHeight: 1.4, marginBottom: 20 }}>
+    <section style={{ padding: 'clamp(80px, 10vw, 140px) clamp(20px, 5vw, 80px)', textAlign: 'center', position: 'relative', borderTop: '1px solid var(--gold2)', background: isLight ? 'radial-gradient(ellipse at 50% 80%, rgba(232,181,160,0.15) 0%, transparent 70%)' : 'radial-gradient(ellipse at 50% 80%, rgba(61,46,32,0.4) 0%, transparent 70%)', transition: 'background 0.4s ease' }}>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.35em', color: 'var(--gold)', opacity: 0.85, textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 16 }}>Experience the Craft</div>
+      <h2 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 300, color: 'var(--text-main)', letterSpacing: '0.15em', lineHeight: 1.4, marginBottom: 20 }}>
         預約體驗課程
       </h2>
-      <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, color: 'rgba(245,239,230,0.45)', letterSpacing: '0.08em', lineHeight: 2, marginBottom: 44, maxWidth: 400, margin: '0 auto 44px' }}>
+      <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, color: 'var(--text-sub)', letterSpacing: '0.08em', lineHeight: 2, marginBottom: 44, maxWidth: 400, margin: '0 auto 44px' }}>
         每月限額開班。在 Phinn-Phang 的香氣書房裡,<br />
         你將親手調製屬於自己的第一瓶香水。
       </p>
@@ -184,8 +190,8 @@ function FooterCTA() {
 
       <div style={{ marginTop: 80, paddingTop: 40, borderTop: '1px solid rgba(245,239,230,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '0.2em', color: 'rgba(245,239,230,0.5)', marginBottom: 4 }}>聞香</div>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.3em', fontStyle: 'italic', color: 'rgba(200,150,90,0.45)' }}>Phinn-Phang · 調香體驗教室</div>
+          <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '0.2em', color: 'var(--text-mute)', marginBottom: 4 }}>聞香</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.3em', fontStyle: 'italic', color: 'var(--gold)', opacity: 0.8 }}>Phinn-Phang · 調香體驗教室</div>
         </div>
         <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(245,239,230,0.2)', letterSpacing: '0.1em' }}>
           © 2026 Phinn-Phang. All rights reserved.
@@ -195,14 +201,14 @@ function FooterCTA() {
   );
 }
 
-function HomePage({ setPage }) {
+function HomePage({ setPage, tweaks }) {
   return (
     <div>
-      <HeroSection setPage={setPage} />
+      <HeroSection setPage={setPage} tweaks={tweaks} />
       <PrescriptionsSection setPage={setPage} />
       {/* <FamiliesSection /> */}
       {/* <CreatorsSection /> */}
-      <FooterCTA />
+      <FooterCTA tweaks={tweaks} />
     </div>
   );
 }

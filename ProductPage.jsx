@@ -194,7 +194,7 @@ function ProductPage({ setPage }) {
   return (
     <div>
       {/* Hero Gallery */}
-      <div style={{ height: '65vh', minHeight: 420, position: 'relative', background: 'radial-gradient(ellipse at 40% 50%, #4A2E14 0%, #2A1A08 40%, #1A1210 100%)' }}>
+      <div style={{ height: '65vh', minHeight: 420, position: 'relative', background: 'var(--hero-bg)', transition: 'background 0.4s ease' }}>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(200,150,90,0.2)', letterSpacing: '0.2em', textAlign: 'center', lineHeight: 2.5 }}>
             <div>// 產品主圖 //</div>
@@ -203,7 +203,7 @@ function ProductPage({ setPage }) {
         </div>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 60%, rgba(200,120,40,0.08) 0%, transparent 60%)' }} />
         {/* Bottom fade */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120, background: 'linear-gradient(to top, #1A1612 0%, transparent 100%)' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 120, background: 'linear-gradient(to top, var(--bg) 0%, transparent 100%)' }} />
       </div>
 
       {/* Product Info */}
@@ -213,7 +213,7 @@ function ProductPage({ setPage }) {
             <Tag variant="gold">{p.family}</Tag>
             <Tag variant="default">{p.familyEn}</Tag>
           </div>
-          <h1 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 300, letterSpacing: '0.15em', color: '#F5EFE6', lineHeight: 1.2, marginBottom: 6 }}>{p.nameZh}</h1>
+          <h1 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 300, letterSpacing: '0.15em', color: 'var(--text-main)', lineHeight: 1.2, marginBottom: 6 }}>{p.nameZh}</h1>
           <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(16px, 2vw, 22px)', fontStyle: 'italic', color: 'rgba(200,150,90,0.7)', letterSpacing: '0.15em', marginBottom: 20 }}>{p.nameEn}</div>
           <button onClick={() => setPage('home')} style={{ background: 'none', border: 'none', fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'rgba(245,239,230,0.45)', letterSpacing: '0.1em', cursor: 'pointer', padding: 0, marginBottom: 8, textDecoration: 'underline', textDecorationColor: 'rgba(245,239,230,0.2)', textUnderlineOffset: 3 }}>
             {p.creator.nameZh} {p.creator.nameEn}
@@ -223,7 +223,7 @@ function ProductPage({ setPage }) {
 
         <div style={{ textAlign: 'right', minWidth: 180 }}>
           <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(24px, 3vw, 38px)', color: '#C8965A', letterSpacing: '0.05em', marginBottom: 20 }}>NT${p.price.toLocaleString()}</div>
-          <button onClick={handleCart} style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, letterSpacing: '0.2em', background: cartAdded ? 'rgba(200,150,90,0.2)' : 'transparent', border: `1px solid ${cartAdded ? 'rgba(200,150,90,0.6)' : 'rgba(200,150,90,0.4)'}`, color: cartAdded ? '#C8965A' : '#F5EFE6', padding: '13px 28px', cursor: 'pointer', transition: 'all 0.4s', display: 'block', width: '100%', marginBottom: 10 }}>
+          <button onClick={handleCart} style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, letterSpacing: '0.2em', background: cartAdded ? 'var(--gold2)' : 'transparent', border: `1px solid ${cartAdded ? 'var(--gold)' : 'var(--gold2)'}`, color: cartAdded ? 'var(--gold)' : 'var(--text-main)', padding: '13px 28px', cursor: 'pointer', transition: 'all 0.4s', display: 'block', width: '100%', marginBottom: 10 }}>
             {cartAdded ? '✓ 已加入' : '加入購物車'}
           </button>
           <button style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 11, letterSpacing: '0.15em', background: 'transparent', border: '1px solid rgba(245,239,230,0.1)', color: 'rgba(245,239,230,0.35)', padding: '10px 28px', cursor: 'pointer', width: '100%' }}>
@@ -233,8 +233,8 @@ function ProductPage({ setPage }) {
       </section>
 
       {/* Fragrance Pyramid */}
-      <ProductSection zh="香調金字塔" en="The Fragrance Pyramid" bg="rgba(0,0,0,0.15)">
-        <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'rgba(245,239,230,0.4)', letterSpacing: '0.08em', lineHeight: 2, marginBottom: 48, maxWidth: 520 }}>
+      <ProductSection zh="香調金字塔" en="The Fragrance Pyramid" bg="var(--gold3)">
+        <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'var(--text-sub)', letterSpacing: '0.08em', lineHeight: 2, marginBottom: 48, maxWidth: 520 }}>
           點擊香材名稱,了解每一味的氣息語言。香調比例為創作者的商業機密,僅呈現層次結構。
         </p>
         <FragrancePyramid notes={p.notes} />
@@ -276,7 +276,7 @@ function ProductPage({ setPage }) {
             <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(200,150,90,0.3)', letterSpacing: '0.08em' }}>肖像</div>
           </div>
           <div style={{ flex: 1, minWidth: 220 }}>
-            <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 22, fontWeight: 400, letterSpacing: '0.15em', color: '#F5EFE6', marginBottom: 3 }}>{p.creator.nameZh}</div>
+            <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 22, fontWeight: 400, letterSpacing: '0.15em', color: 'var(--text-main)', marginBottom: 3 }}>{p.creator.nameZh}</div>
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, fontStyle: 'italic', letterSpacing: '0.2em', color: 'rgba(200,150,90,0.6)', marginBottom: 14 }}>{p.creator.nameEn}</div>
             <div style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
               {p.creator.tags.map(t => <Tag key={t} variant="gold">{t}</Tag>)}
@@ -305,7 +305,7 @@ function SimilarCard({ item }) {
   const [hov, setHov] = useState(false);
   return (
     <div onMouseOver={() => setHov(true)} onMouseOut={() => setHov(false)}
-      style={{ cursor: 'pointer', border: `1px solid ${hov ? 'rgba(200,150,90,0.35)' : 'rgba(200,150,90,0.1)'}`, background: hov ? '#231810' : 'transparent', transition: 'all 0.35s', overflow: 'hidden' }}>
+      style={{ cursor: 'pointer', border: `1px solid ${hov ? 'var(--gold)' : 'var(--gold2)'}`, background: hov ? 'var(--card-bg)' : 'transparent', transition: 'all 0.35s', overflow: 'hidden' }}>
       <div style={{ aspectRatio: '4/3', background: item.gradient, position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(200,150,90,0.2)', letterSpacing: '0.12em' }}>// 情境照 //</div>
@@ -313,7 +313,7 @@ function SimilarCard({ item }) {
         {hov && <div style={{ position: 'absolute', inset: 0, background: 'rgba(200,150,90,0.04)' }} />}
       </div>
       <div style={{ padding: '16px 18px' }}>
-        <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 16, fontWeight: 400, letterSpacing: '0.1em', color: '#F5EFE6', marginBottom: 2 }}>{item.nameZh}</div>
+        <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 16, fontWeight: 400, letterSpacing: '0.1em', color: 'var(--text-main)', marginBottom: 2 }}>{item.nameZh}</div>
         <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, fontStyle: 'italic', color: 'rgba(200,150,90,0.55)', letterSpacing: '0.1em', marginBottom: 10 }}>{item.nameEn}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Tag variant="gold">{item.family}</Tag>
