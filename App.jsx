@@ -3,6 +3,7 @@ const { useState, useEffect } = React;
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "colorTemp": "amber",
+  "theme": "system",
   "pyramidStyle": "triangle",
   "startPage": "home"
 }/*EDITMODE-END*/;
@@ -27,7 +28,13 @@ function TweaksPanel({ visible, tweaks, setTweaks }) {
 
   return (
     <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 999, background: '#1E1510', border: '1px solid rgba(200,150,90,0.25)', padding: '24px 24px 18px', width: 260, boxShadow: '0 8px 40px rgba(0,0,0,0.6)' }}>
-      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, letterSpacing: '0.3em', color: 'rgba(200,150,90,0.6)', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 20 }}>Tweaks</div>
+      {row('佈景主題 Theme',
+        <div>
+          {opt('theme', 'dark', '深色')}
+          {opt('theme', 'light', '明亮')}
+          {opt('theme', 'system', '自動')}
+        </div>
+      )}
       {row('色溫 Color Temperature',
         <div>
           {opt('colorTemp', 'amber', '琥珀暖調')}
@@ -56,7 +63,21 @@ function App() {
   const [cartCount, setCartCount] = useState(0);
   const [tweaksVisible, setTweaksVisible] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
-  const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
+
+  // Load tweaks from localStorage or defaults
+  const [tweaks, setTweaksRaw] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pp_tweaks');
+      return saved ? { ...TWEAK_DEFAULTS, ...JSON.parse(saved) } : TWEAK_DEFAULTS;
+    } catch {
+      return TWEAK_DEFAULTS;
+    }
+  });
+
+  const setTweaks = (next) => {
+    setTweaksRaw(next);
+    localStorage.setItem('pp_tweaks', JSON.stringify(next));
+  };
 
   const setPage = (p) => {
     setPageRaw(p);
@@ -64,25 +85,64 @@ function App() {
     window.scrollTo(0, 0);
   };
 
-  // Apply color temperature
+  // Apply theme & color temperature
   useEffect(() => {
     const root = document.documentElement;
-    if (tweaks.colorTemp === 'violet') {
-      root.style.setProperty('--gold', '#A090C8');
-      root.style.setProperty('--gold2', 'rgba(160,144,200,0.25)');
-      root.style.setProperty('--coral', '#C0A8D8');
-      root.style.setProperty('--bg', '#16141A');
-      root.style.setProperty('--bg2', '#1A1820');
-      root.style.setProperty('--bg3', '#2E2A3D');
-    } else {
-      root.style.setProperty('--gold', '#C8965A');
-      root.style.setProperty('--gold2', 'rgba(200,150,90,0.25)');
-      root.style.setProperty('--coral', '#E8B5A0');
-      root.style.setProperty('--bg', '#1A1612');
-      root.style.setProperty('--bg2', '#201610');
-      root.style.setProperty('--bg3', '#3D2E20');
+    
+    const applyTheme = (theme) => {
+      let activeTheme = theme;
+      if (theme === 'system') {
+        activeTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      
+      const isLight = activeTheme === 'light';
+      root.setAttribute('data-theme', activeTheme);
+      
+      if (isLight) {
+        if (tweaks.colorTemp === 'violet') {
+          root.style.setProperty('--gold', '#8A7BB0');
+          root.style.setProperty('--gold2', 'rgba(138,123,176,0.18)');
+          root.style.setProperty('--coral', '#B08BA0');
+          root.style.setProperty('--bg', '#F8F6FA');
+          root.style.setProperty('--bg2', '#F0EAF5');
+          root.style.setProperty('--bg3', '#E4D9EF');
+        } else {
+          root.style.setProperty('--gold', '#A67C4A');
+          root.style.setProperty('--gold2', 'rgba(166,124,74,0.18)');
+          root.style.setProperty('--coral', '#D69A84');
+          root.style.setProperty('--bg', '#FCF9F5');
+          root.style.setProperty('--bg2', '#F5EFE6');
+          root.style.setProperty('--bg3', '#EDE4D7');
+        }
+      } else {
+        if (tweaks.colorTemp === 'violet') {
+          root.style.setProperty('--gold', '#A090C8');
+          root.style.setProperty('--gold2', 'rgba(160,144,200,0.25)');
+          root.style.setProperty('--coral', '#C0A8D8');
+          root.style.setProperty('--bg', '#16141A');
+          root.style.setProperty('--bg2', '#1A1820');
+          root.style.setProperty('--bg3', '#2E2A3D');
+        } else {
+          root.style.setProperty('--gold', '#C8965A');
+          root.style.setProperty('--gold2', 'rgba(200,150,90,0.25)');
+          root.style.setProperty('--coral', '#E8B5A0');
+          root.style.setProperty('--bg', '#1A1612');
+          root.style.setProperty('--bg2', '#201610');
+          root.style.setProperty('--bg3', '#3D2E20');
+        }
+      }
+    };
+
+    applyTheme(tweaks.theme);
+
+    // Listen for system changes if in system mode
+    if (tweaks.theme === 'system') {
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+      const handler = () => applyTheme('system');
+      media.addEventListener('change', handler);
+      return () => media.removeEventListener('change', handler);
     }
-  }, [tweaks.colorTemp]);
+  }, [tweaks.theme, tweaks.colorTemp]);
 
   // Create demo course if not exists
   useEffect(() => {
@@ -125,14 +185,14 @@ function App() {
 
   return (
     <div style={wrapStyle}>
-      <Header setPage={setPage} cartCount={cartCount} tweaks={tweaks} onPortal={()=>setPortalOpen(true)} />
+      <Header setPage={setPage} cartCount={cartCount} tweaks={tweaks} setTweaks={setTweaks} onPortal={()=>setPortalOpen(true)} />
       {portalOpen && <PortalModal onClose={()=>setPortalOpen(false)} />}
       <main style={{ paddingTop: page === 'home' ? 0 : 72 }}>
-        {page === 'home'    && <HomePage setPage={setPage} />}
-        {page === 'product' && <ProductPage setPage={setPage} />}
-        {page === 'explore' && <HomePage setPage={setPage} />}
-        {page === 'creator' && <HomePage setPage={setPage} />}
-        {page === 'about'   && <HomePage setPage={setPage} />}
+        {page === 'home'    && <HomePage setPage={setPage} tweaks={tweaks} />}
+        {page === 'product' && <ProductPage setPage={setPage} tweaks={tweaks} />}
+        {page === 'explore' && <HomePage setPage={setPage} tweaks={tweaks} />}
+        {page === 'creator' && <HomePage setPage={setPage} tweaks={tweaks} />}
+        {page === 'about'   && <HomePage setPage={setPage} tweaks={tweaks} />}
       </main>
       <TweaksPanel visible={tweaksVisible} tweaks={tweaks} setTweaks={setTweaks} />
     </div>
