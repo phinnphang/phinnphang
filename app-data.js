@@ -2,12 +2,13 @@
 
 const PP = (() => {
   const KEYS = {
-    SETTINGS: 'pp_settings',
-    COURSES:  'pp_courses',
-    WORKS:    'pp_works',
+    SETTINGS:     'pp_settings',
+    COURSES:      'pp_courses',
+    WORKS:        'pp_works',
+    RESERVATIONS: 'pp_reservations',
   };
 
-  const FAMILIES = [
+  const DEFAULT_FAMILIES = [
     { id: 'citrus',   zh: '柑橘',   en: 'Citrus',    color: '#E8A84A', bg: 'rgba(232,168,74,0.15)'  },
     { id: 'floral',   zh: '花香',   en: 'Floral',    color: '#E8B5A0', bg: 'rgba(232,181,160,0.15)' },
     { id: 'woody',    zh: '木質',   en: 'Woody',     color: '#A07848', bg: 'rgba(160,120,72,0.15)'  },
@@ -15,7 +16,31 @@ const PP = (() => {
     { id: 'fresh',    zh: '清新',   en: 'Fresh',     color: '#7B9E6E', bg: 'rgba(123,158,110,0.15)' },
     { id: 'gourmand', zh: '美食',   en: 'Gourmand',  color: '#D4956A', bg: 'rgba(212,149,106,0.15)' },
     { id: 'spicy',    zh: '辛香',   en: 'Spicy',     color: '#B5614A', bg: 'rgba(181,97,74,0.15)'   },
+    { id: 'aldehyde', zh: '醛香',   en: 'Aldehyde',  color: '#D8C8A8', bg: 'rgba(216,200,168,0.15)' },
+    { id: 'animalic', zh: '動物香', en: 'Animalic', color: '#7A5438', bg: 'rgba(122,84,56,0.15)'   },
   ];
+
+  // Runtime FAMILIES — settings.families overrides defaults (additions + edits)
+  const FAMILIES = new Proxy([], {
+    get(_, prop) {
+      const s = load(KEYS.SETTINGS, {});
+      const fams = Array.isArray(s.families) && s.families.length ? s.families : DEFAULT_FAMILIES;
+      const target = fams;
+      const v = target[prop];
+      return typeof v === 'function' ? v.bind(target) : v;
+    },
+    has(_, prop) { return prop in DEFAULT_FAMILIES; },
+    ownKeys() {
+      const s = load(KEYS.SETTINGS, {});
+      const fams = Array.isArray(s.families) && s.families.length ? s.families : DEFAULT_FAMILIES;
+      return Reflect.ownKeys(fams);
+    },
+    getOwnPropertyDescriptor(_, prop) {
+      const s = load(KEYS.SETTINGS, {});
+      const fams = Array.isArray(s.families) && s.families.length ? s.families : DEFAULT_FAMILIES;
+      return Object.getOwnPropertyDescriptor(fams, prop);
+    },
+  });
 
   const DEFAULT_SETTINGS = {
     adminPassword: 'dfbbf1be2a89dbe5705884b9e81e60f44e20352597ab0b18581b1109aed7cbd1', // hash of 'phinnphang2026'
@@ -23,6 +48,7 @@ const PP = (() => {
     googleClientId: '',
     googleScriptUrl: '',
     courseTypes: ['春季體驗課', '秋季體驗課', '企業團體活動', '週末工作坊'],
+    productTypes: ['空間噴霧', '織品噴霧', '擴香瓶'],
     defaultAiNamePrompt: '根據以下香精配方，為這款香水創作一個富有詩意的繁體中文名字（2～4個字）。不可包含任何香精原料的名稱。要能喚起一種情境、氛圍或感受，帶有文學性。請提供3個選項，每行一個，只回覆名字本身。',
     defaultAiDescPrompt: '根據以下香精配方，用優美的繁體中文寫一段香水介紹（約120字）。描述氣味的層次與演變、喚起的情境與感受，語氣溫暖而富有詩意，像是一封寫給香氣的短信。',
   };
@@ -56,6 +82,28 @@ const PP = (() => {
 
   function getCourseByToken(token) { return getCourses().find(c => c.token === token) || null; }
   function getWorkById(id)         { return getWorks().find(w => w.id === id) || null; }
+  function getCourseById(id)       { return getCourses().find(c => c.id === id) || null; }
+
+  function getReservations()       { return load(KEYS.RESERVATIONS, []); }
+  function saveReservation(r) {
+    const list = getReservations();
+    const idx  = list.findIndex(x => x.id === r.id);
+    if (idx >= 0) list[idx] = r; else list.unshift(r);
+    save(KEYS.RESERVATIONS, list);
+  }
+  function deleteReservation(id) { save(KEYS.RESERVATIONS, getReservations().filter(r => r.id !== id)); }
+
+  function getBookableCourses() { return getCourses().filter(c => c.bookable && c.date); }
+  function getPublishedWorks()  { return getWorks().filter(w => w.published && w.productType); }
+
+  const RESERVATION_STATUSES = [
+    { id: 'pending',   label: '待確認', color: '#C8965A' },
+    { id: 'confirmed', label: '已確認', color: '#7B9E6E' },
+    { id: 'emailed',   label: '已寄信', color: '#6A93A8' },
+    { id: 'paid',      label: '已付款', color: '#A088C8' },
+    { id: 'completed', label: '已完成', color: '#8AA878' },
+    { id: 'cancelled', label: '已取消', color: '#B05850' },
+  ];
 
   // ── ID / Token generation ─────────────────────────────────────────────────
   function genId()    { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
@@ -241,10 +289,12 @@ const PP = (() => {
 
   // ── Public API ────────────────────────────────────────────────────────────
   return {
-    FAMILIES, KEYS, DEFAULT_SETTINGS,
+    FAMILIES, KEYS, DEFAULT_SETTINGS, RESERVATION_STATUSES,
     getSettings, saveSettings,
-    getCourses, saveCourse, deleteCourse,
+    getCourses, saveCourse, deleteCourse, getCourseById,
     getWorks, saveWork,
+    getBookableCourses, getPublishedWorks,
+    getReservations, saveReservation, deleteReservation,
     getCourseByToken, getWorkById,
     genId, genToken,
     computeRadar,
