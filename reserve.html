@@ -104,7 +104,7 @@ function Confirm({ data, modal, onClose }) {
   return (
     <div style={{minHeight: modal?'auto':'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24,background: modal?'transparent':'radial-gradient(ellipse at 50% 50%, #3D1A10 0%, #201008 40%, #1A1210 80%)'}}>
       <div className="fade-up" style={{maxWidth:520,textAlign:'center'}}>
-        {!modal && <img src="uploads/Phinn-phang_wh-7ca1d186.png" alt="Phinn-Phang" style={{height:48,marginBottom:32,opacity:.8}} />}
+        {!modal && <img src="uploads/logo_dark.png" alt="Phinn-Phang" style={{height:48,marginBottom:32,opacity:.8}} />}
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:60,color:'#E8957A',lineHeight:1,marginBottom:20,opacity:.5}}>✦</div>
         <h1 style={{fontFamily:"'Noto Serif TC',serif",fontSize:'clamp(22px,5vw,30px)',fontWeight:300,letterSpacing:'.15em',color:'#F0E8DE',marginBottom:20}}>預約已送出</h1>
         <p style={{fontSize:14,color:'rgba(245,239,230,0.55)',lineHeight:2.2,letterSpacing:'.05em',marginBottom:40}}>
@@ -130,7 +130,7 @@ function InquiryConfirm({ data, modal, onClose }) {
   return (
     <div style={{minHeight: modal?'auto':'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:24,background: modal?'transparent':'radial-gradient(ellipse at 50% 50%, #3D1A10 0%, #201008 40%, #1A1210 80%)'}}>
       <div className="fade-up" style={{maxWidth:520,textAlign:'center'}}>
-        {!modal && <img src="uploads/Phinn-phang_wh-7ca1d186.png" alt="Phinn-Phang" style={{height:48,marginBottom:32,opacity:.8}} />}
+        {!modal && <img src="uploads/logo_dark.png" alt="Phinn-Phang" style={{height:48,marginBottom:32,opacity:.8}} />}
         <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:60,color:'#E8957A',lineHeight:1,marginBottom:20,opacity:.5}}>✉</div>
         <h1 style={{fontFamily:"'Noto Serif TC',serif",fontSize:'clamp(22px,5vw,30px)',fontWeight:300,letterSpacing:'.15em',color:'#F0E8DE',marginBottom:20}}>詢問已傳送</h1>
         <p style={{fontSize:14,color:'rgba(245,239,230,0.55)',lineHeight:2.2,letterSpacing:'.05em',marginBottom:32}}>
@@ -237,7 +237,7 @@ function ReserveApp({ modal }) {
       )}
       <div className="fade-up" style={{maxWidth:560,margin:'0 auto',padding:modal?'56px 24px 40px':'0'}}>
         <div style={{textAlign:'center',marginBottom:36}}>
-          {!modal && <img src="uploads/Phinn-phang_wh-7ca1d186.png" alt="Phinn-Phang" style={{height:44,marginBottom:24,opacity:.75}} />}
+          {!modal && <img src="uploads/logo_dark.png" alt="Phinn-Phang" style={{height:44,marginBottom:24,opacity:.75}} />}
           <div style={{fontSize:11,letterSpacing:'.3em',color:'rgba(200,150,90,0.6)',marginBottom:12}}>RESERVE · {mode==='booking'?'預約體驗':'團體 / 客製'}</div>
           <h1 style={{fontFamily:"'Noto Serif TC',serif",fontSize:'clamp(24px,5vw,32px)',fontWeight:300,letterSpacing:'.18em',color:'#F0E8DE',marginBottom:12}}>{mode==='booking'?'來聞香':'聊聊你的想法'}</h1>
           <p style={{fontSize:13,color:'rgba(245,239,230,0.45)',letterSpacing:'.06em'}}>{mode==='booking'?'填寫以下資料，我們會盡快與你聯繫確認':'讓我們為你規劃專屬的氣味體驗'}</p>

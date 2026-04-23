@@ -34,7 +34,7 @@ function HeroSection({ setPage, tweaks, openReserve }) {
       <div style={{ position: 'absolute', width: '20vw', height: '20vw', borderRadius: '50%', background: 'radial-gradient(circle, var(--gold3) 0%, transparent 70%)', top: '30%', left: '40%', pointerEvents: 'none' }} />
 
       <div style={{ textAlign: 'center', zIndex: 1, maxWidth: 680, padding: '80px 24px 0', animation: 'fadeUp 1s ease both' }}>
-        <img src={isLight ? "uploads/Phinn-phang.png" : "uploads/Phinn-phang_wh-7ca1d186.png"} alt="Phinn-Phang scent lab" style={{ height: 'clamp(60px, 10vw, 110px)', width: 'auto', marginBottom: 32, filter: isLight ? 'none' : 'drop-shadow(0 0 40px rgba(200,130,60,0.2))', transition: '0.3s' }} />
+        <img src={isLight ? "uploads/logo_light.png" : "uploads/logo_dark.png"} alt="Phinn-Phang scent lab" style={{ height: 'clamp(60px, 10vw, 110px)', width: 'auto', marginBottom: 32, filter: isLight ? 'none' : 'drop-shadow(0 0 40px rgba(200,130,60,0.2))', transition: '0.3s' }} />
         <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '3.5px', color: 'var(--text-main)', marginBottom: 44 }}>
           來自台語的「聞香」<br />同時也有湊湊熱鬧的意思
         </div>

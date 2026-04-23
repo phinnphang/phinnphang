@@ -277,7 +277,7 @@ function Header({ setPage, cartCount = 0, tweaks, setTweaks, onPortal, onReserve
       {/* Logo */}
       <div onClick={() => setPage('home')} style={{ cursor: 'pointer' }}>
         <img 
-          src={isLight ? "uploads/Phinn-phang.png" : "uploads/Phinn-phang_wh-7ca1d186.png"} 
+          src={isLight ? "uploads/logo_light.png" : "uploads/logo_dark.png"}
           alt="Phinn-Phang scent lab" 
           style={{ height: 38, width: 'auto', display: 'block', objectFit: 'contain', transition: '0.3s' }} 
         />
