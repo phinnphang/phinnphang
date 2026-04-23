@@ -45,6 +45,7 @@ const PP = (() => {
   const DEFAULT_SETTINGS = {
     adminPassword: 'dfbbf1be2a89dbe5705884b9e81e60f44e20352597ab0b18581b1109aed7cbd1', // hash of 'phinnphang2026'
     adminEmail: 'phinnphang.2025@gmail.com',
+    adminEmails: ['phinnphang.2025@gmail.com', 'ihankuo905@gmail.com'],
     googleClientId: '152368598320-g3ep5uilatcfepts6b9ut6vp617n555d.apps.googleusercontent.com',
     googleScriptUrl: '',
     courseTypes: ['春季體驗課', '秋季體驗課', '企業團體活動', '週末工作坊'],
@@ -301,6 +302,16 @@ const PP = (() => {
     syncWorkToSheet,
     generateWorkImage,
     // Security
+    isAuthorizedAdmin(email) {
+      if (!email) return false;
+      const e = String(email).toLowerCase();
+      const settings = getSettings();
+      const list = Array.isArray(settings.adminEmails) ? settings.adminEmails : [];
+      const legacy = settings.adminEmail || '';
+      if (list.length > 0 && list.some(x => String(x).toLowerCase() === e)) return true;
+      if (legacy && String(legacy).toLowerCase() === e) return true;
+      return false;
+    },
     async hash(text) {
       if (!text) return '';
       const msgBuffer = new TextEncoder().encode(text);

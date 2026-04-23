@@ -73,7 +73,7 @@ function AdminTabLogin({ onClose }) {
 
   const handleGoogleLogin = (response) => {
     const user = PP.parseJwt(response.credential);
-    if (user && user.email === settings.adminEmail) {
+    if (user && PP.isAuthorizedAdmin(user.email)) {
       sessionStorage.setItem('pp_admin_auth', '1');
       window.location.href = 'admin.html';
     } else {
