@@ -53,7 +53,6 @@ function CTAButton({ children, onClick, gold, style }) {
 }
 
 // ── Admin Tab (inline login) ──────────────────────────────────────────────
-// ── Admin Tab (inline login) ──────────────────────────────────────────────
 function AdminTabLogin({ onClose }) {
   const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
@@ -224,7 +223,7 @@ function PortalModal({ onClose }) {
   );
 }
 
-function Header({ setPage, cartCount = 0, tweaks, setTweaks, onPortal }) {
+function Header({ setPage, cartCount = 0, tweaks, setTweaks, onPortal, onReserve }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
@@ -233,7 +232,7 @@ function Header({ setPage, cartCount = 0, tweaks, setTweaks, onPortal }) {
   }, []);
 
   const navLinks = [
-    { label: '預約體驗', page: 'reserve' },
+    { label: '預約體驗', action: 'reserve' },
     { label: '探索香氣', page: 'explore' },
     { label: '關於 Phinn-Phang', page: 'about' },
   ];
@@ -287,7 +286,7 @@ function Header({ setPage, cartCount = 0, tweaks, setTweaks, onPortal }) {
       {/* Nav */}
       <nav style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
         {navLinks.map(l => (
-          <NavBtn key={l.label} label={l.label} onClick={() => setPage(l.page)} />
+          <NavBtn key={l.label} label={l.label} onClick={() => l.action === 'reserve' ? onReserve?.() : setPage(l.page)} />
         ))}
         <button onClick={onPortal} style={{ background: 'none', border: '1px solid var(--gold)', color: 'var(--gold)', fontFamily:"'Noto Serif TC',serif", fontSize: 12, letterSpacing: '.12em', padding: '5px 14px', transition: '.25s', cursor: 'pointer' }}>課程入口</button>
         
@@ -343,4 +342,4 @@ function NavBtn({ label, onClick }) {
   );
 }
 
-Object.assign(window, { ImagePlaceholder, SectionTitle, GoldDivider, Tag, CTAButton, Header, PortalModal });
+Object.assign(window, { ImagePlaceholder, SectionTitle, GoldDivider, Tag, CTAButton, Header, PortalModal, ReserveModal });
