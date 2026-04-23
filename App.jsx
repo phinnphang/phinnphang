@@ -63,6 +63,7 @@ function App() {
   const [cartCount, setCartCount] = useState(0);
   const [tweaksVisible, setTweaksVisible] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
+  const [reserveOpen, setReserveOpen] = useState(false);
 
   // Load tweaks from localStorage or defaults
   const [tweaks, setTweaksRaw] = useState(() => {
@@ -169,11 +170,24 @@ function App() {
     const handler = (e) => {
       if (e.data?.type === '__activate_edit_mode') setTweaksVisible(true);
       if (e.data?.type === '__deactivate_edit_mode') setTweaksVisible(false);
+      if (e.data?.type === 'pp-reserve-close') setReserveOpen(false);
     };
     window.addEventListener('message', handler);
     window.parent.postMessage({ type: '__edit_mode_available' }, '*');
     return () => window.removeEventListener('message', handler);
   }, []);
+
+  // Intercept navigation to reserve.html and open as modal instead
+  useEffect(() => {
+    const onClick = (e) => {
+      const a = e.target.closest('a[href="reserve.html"]');
+      if (a) { e.preventDefault(); setReserveOpen(true); }
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, []);
+
+  const openReserve = () => setReserveOpen(true);
 
   const wrapStyle = {
     minHeight: '100vh',
@@ -185,14 +199,16 @@ function App() {
 
   return (
     <div style={wrapStyle}>
-      <Header setPage={setPage} cartCount={cartCount} tweaks={tweaks} setTweaks={setTweaks} onPortal={()=>setPortalOpen(true)} />
+      <Header setPage={setPage} cartCount={cartCount} tweaks={tweaks} setTweaks={setTweaks} onPortal={()=>setPortalOpen(true)} onReserve={openReserve} />
       {portalOpen && <PortalModal onClose={()=>setPortalOpen(false)} />}
+      {reserveOpen && <ReserveModal onClose={()=>setReserveOpen(false)} />}
       <main style={{ paddingTop: page === 'home' ? 0 : 72 }}>
-        {page === 'home'    && <HomePage setPage={setPage} tweaks={tweaks} />}
-        {page === 'product' && <ProductPage setPage={setPage} tweaks={tweaks} />}
-        {page === 'explore' && <HomePage setPage={setPage} tweaks={tweaks} />}
-        {page === 'creator' && <HomePage setPage={setPage} tweaks={tweaks} />}
-        {page === 'about'   && <HomePage setPage={setPage} tweaks={tweaks} />}
+        {page === 'home'    && <HomePage setPage={setPage} tweaks={tweaks} openReserve={openReserve} />}
+        {page === 'product' && <ProductPage setPage={setPage} tweaks={tweaks} openReserve={openReserve} />}
+        {page === 'explore' && <ExplorePage setPage={setPage} tweaks={tweaks} openReserve={openReserve} />}
+        {page === 'reserve' && (() => { setTimeout(()=>{setReserveOpen(true);setPage('home');},0); return null; })()}
+        {page === 'creator' && <HomePage setPage={setPage} tweaks={tweaks} openReserve={openReserve} />}
+        {page === 'about'   && <HomePage setPage={setPage} tweaks={tweaks} openReserve={openReserve} />}
       </main>
       <TweaksPanel visible={tweaksVisible} tweaks={tweaks} setTweaks={setTweaks} />
     </div>

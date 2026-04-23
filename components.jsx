@@ -125,6 +125,25 @@ function AdminTabLogin({ onClose }) {
   );
 }
 
+// ── Reserve Modal ─────────────────────────────────────────────────────────
+function ReserveModal({ onClose }) {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
+
+  return (
+    <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:600, background:'rgba(10,6,4,0.88)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'clamp(12px,3vw,32px)', animation:'fadeUp .25s ease' }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:640, maxHeight:'92vh', background:'radial-gradient(ellipse at 50% 0%, #2A1810 0%, #1A1210 70%)', border:'1px solid rgba(200,150,90,0.2)', position:'relative', overflow:'hidden', boxShadow:'0 40px 120px rgba(0,0,0,0.6)' }}>
+        <iframe src="reserve.html?modal=1" title="預約體驗" style={{ width:'100%', height:'min(92vh, 820px)', border:'none', display:'block', background:'transparent' }} />
+      </div>
+    </div>
+  );
+}
+
 // ── Portal Modal ──────────────────────────────────────────────────────────
 function PortalModal({ onClose }) {
   const [tab, setTab] = useState('student');

@@ -23,7 +23,7 @@ const CREATORS = [
   { id: 3, nameZh: '吳宇哲', nameEn: 'Yu-Che Wu', tags: ['東方調', '辛香'], quote: '東方香料是我的母語。', works: 9, gradient: 'radial-gradient(ellipse at 50% 30%, #2A2A18 0%, #121208 80%)' },
 ];
 
-function HeroSection({ setPage, tweaks }) {
+function HeroSection({ setPage, tweaks, openReserve }) {
   const isLight = tweaks?.theme === 'system' 
     ? !window.matchMedia('(prefers-color-scheme: dark)').matches
     : tweaks?.theme === 'light';
@@ -46,7 +46,7 @@ function HeroSection({ setPage, tweaks }) {
 
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
           <CTAButton gold onClick={() => setPage('product')}>探索香氣作品</CTAButton>
-          <CTAButton>預約體驗課程</CTAButton>
+          <CTAButton onClick={() => openReserve?.()}>預約體驗課程</CTAButton>
         </div>
       </div>
 
@@ -61,8 +61,16 @@ function HeroSection({ setPage, tweaks }) {
 
 function PrescriptionCard({ item, setPage }) {
   const [hov, setHov] = useState(false);
+  const isDynamic = !!item.id && typeof item.id === 'string' && item.id.length > 5;
+  const handleClick = () => {
+    if (isDynamic) {
+      window.location.href = `work.html?id=${item.id}`;
+    } else {
+      setPage('product');
+    }
+  };
   return (
-    <div onMouseOver={() => setHov(true)} onMouseOut={() => setHov(false)} onClick={() => setPage('product')}
+    <div onMouseOver={() => setHov(true)} onMouseOut={() => setHov(false)} onClick={handleClick}
       style={{ minWidth: 260, maxWidth: 290, flexShrink: 0, background: hov ? 'var(--card-hov-bg)' : 'var(--card-bg)', border: `1px solid ${hov ? 'var(--gold)' : 'var(--gold2)'}`, padding: '28px 26px', cursor: 'pointer', transition: 'all 0.35s ease', boxShadow: hov ? '0 8px 40px rgba(0,0,0,0.2), 0 0 30px var(--gold3)' : '0 4px 20px rgba(0,0,0,0.1)' }}>
       {/* Rx header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
@@ -97,13 +105,20 @@ function PrescriptionCard({ item, setPage }) {
 }
 
 function PrescriptionsSection({ setPage }) {
+  const published = PP.getPublishedWorks();
+  const items = published.length > 0 ? published.slice(0, 6).map(w => ({
+    id: w.id, nameZh: w.workName, nameEn: w.studentName,
+    type: w.productType, family: '學員配方',
+    notes: (w.formula || []).slice(0, 3).map(f => `${f.name}${f.nameEn ? ' ' + f.nameEn : ''}`),
+    price: w.price || 1280, vol: w.vol || 30,
+  })) : PRESCRIPTIONS;
   return (
     <section style={{ padding: 'clamp(64px, 8vw, 120px) 0', position: 'relative' }}>
       <div style={{ padding: '0 clamp(20px, 5vw, 80px)', marginBottom: 48 }}>
         <SectionTitle zh="本月香氣處方箋" en="Monthly Fragrance Prescriptions" center />
       </div>
       <div style={{ display: 'flex', gap: 24, overflowX: 'auto', padding: '8px clamp(20px, 5vw, 80px) 24px', scrollbarWidth: 'none' }}>
-        {PRESCRIPTIONS.map(item => <PrescriptionCard key={item.id} item={item} setPage={setPage} />)}
+        {items.map(item => <PrescriptionCard key={item.id} item={item} setPage={setPage} />)}
       </div>
     </section>
   );
@@ -172,7 +187,7 @@ function CreatorsSection() {
   );
 }
 
-function FooterCTA({ tweaks }) {
+function FooterCTA({ tweaks, openReserve }) {
   const isLight = tweaks?.theme === 'system' 
     ? !window.matchMedia('(prefers-color-scheme: dark)').matches
     : tweaks?.theme === 'light';
@@ -186,7 +201,7 @@ function FooterCTA({ tweaks }) {
         每月限額開班。在 Phinn-Phang 的香氣書房裡,<br />
         你將親手調製屬於自己的第一瓶香水。
       </p>
-      <CTAButton gold>了解課程內容</CTAButton>
+      <CTAButton gold onClick={() => openReserve?.()}>了解課程內容</CTAButton>
 
       <div style={{ marginTop: 80, paddingTop: 40, borderTop: '1px solid rgba(245,239,230,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div>
@@ -201,14 +216,14 @@ function FooterCTA({ tweaks }) {
   );
 }
 
-function HomePage({ setPage, tweaks }) {
+function HomePage({ setPage, tweaks, openReserve }) {
   return (
     <div>
-      <HeroSection setPage={setPage} tweaks={tweaks} />
+      <HeroSection setPage={setPage} tweaks={tweaks} openReserve={openReserve} />
       <PrescriptionsSection setPage={setPage} />
       {/* <FamiliesSection /> */}
       {/* <CreatorsSection /> */}
-      <FooterCTA tweaks={tweaks} />
+      <FooterCTA tweaks={tweaks} openReserve={openReserve} />
     </div>
   );
 }
