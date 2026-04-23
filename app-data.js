@@ -44,8 +44,8 @@ const PP = (() => {
 
   const DEFAULT_SETTINGS = {
     adminPassword: 'dfbbf1be2a89dbe5705884b9e81e60f44e20352597ab0b18581b1109aed7cbd1', // hash of 'phinnphang2026'
-    adminEmail: '',
-    googleClientId: '',
+    adminEmail: 'phinnphang.2025@gmail.com',
+    googleClientId: '152368598320-g3ep5uilatcfepts6b9ut6vp617n555d.apps.googleusercontent.com',
     googleScriptUrl: '',
     courseTypes: ['春季體驗課', '秋季體驗課', '企業團體活動', '週末工作坊'],
     productTypes: ['空間噴霧', '織品噴霧', '擴香瓶'],
