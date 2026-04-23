@@ -745,6 +745,7 @@ function WorksList({ works, courses }) {
 function SettingsPage({ onSaved }) {
   const [s, setS] = useState(PP.getSettings());
   const [newType, setNewType] = useState('');
+  const [newEmail, setNewEmail] = useState('');
   const [pwNew, setPwNew] = useState('');
   const [msg, setMsg] = useState('');
 
@@ -753,6 +754,8 @@ function SettingsPage({ onSaved }) {
     if (pwNew.trim()) {
       next.adminPassword = await PP.hash(pwNew);
     }
+    // Sync legacy adminEmail = primary (first of adminEmails) for backward compat
+    next.adminEmail = (Array.isArray(next.adminEmails) && next.adminEmails[0]) || '';
     PP.saveSettings(next);
     setS(next);
     setPwNew('');
@@ -761,6 +764,20 @@ function SettingsPage({ onSaved }) {
   };
   const addType = () => { if(!newType.trim()) return; setS(p=>({...p,courseTypes:[...p.courseTypes,newType.trim()]})); setNewType(''); };
   const removeType = (t) => setS(p=>({...p,courseTypes:p.courseTypes.filter(x=>x!==t)}));
+  const addEmail = () => {
+    const e = newEmail.trim().toLowerCase();
+    if (!e) return;
+    if (!/^\S+@\S+\.\S+$/.test(e)) { alert('Email 格式不正確'); return; }
+    const list = Array.isArray(s.adminEmails) ? s.adminEmails : [];
+    if (list.some(x => String(x).toLowerCase() === e)) { alert('此 Email 已在清單中'); return; }
+    setS(p => ({...p, adminEmails: [...list, e]}));
+    setNewEmail('');
+  };
+  const removeEmail = (email) => {
+    const list = Array.isArray(s.adminEmails) ? s.adminEmails : [];
+    if (list.length <= 1) { alert('至少保留一個授權管理員,否則會被鎖在後台外'); return; }
+    setS(p => ({...p, adminEmails: list.filter(x => x !== email)}));
+  };
 
   return (
     <div>
@@ -783,8 +800,19 @@ function SettingsPage({ onSaved }) {
       <div className="card" style={{marginBottom:16}}>
         <h3>Google 登入（選填）</h3>
         <div className="field">
-          <label>管理員 Email（Google 帳號）</label>
-          <input value={s.adminEmail||''} onChange={e=>setS(p=>({...p,adminEmail:e.target.value}))} placeholder="your@gmail.com" />
+          <label>授權管理員清單（可用 Google 登入進後台）</label>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
+            {(Array.isArray(s.adminEmails) ? s.adminEmails : []).map(em=>(
+              <span key={em} style={{background:'rgba(200,150,90,0.1)',border:'1px solid rgba(200,150,90,0.25)',padding:'4px 10px',fontSize:12,display:'flex',alignItems:'center',gap:6}}>
+                {em}
+                <button onClick={()=>removeEmail(em)} style={{background:'none',border:'none',color:'rgba(200,80,60,0.6)',fontSize:13,lineHeight:1,padding:0}}>×</button>
+              </span>
+            ))}
+          </div>
+          <div style={{display:'flex',gap:6}}>
+            <input type="email" value={newEmail} onChange={e=>setNewEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&(e.preventDefault(),addEmail())} placeholder="新增授權 email" autoComplete="off" />
+            <button className="btn" onClick={addEmail}>新增</button>
+          </div>
         </div>
         <div className="field" style={{marginBottom:0}}>
           <label>Google Client ID</label>
