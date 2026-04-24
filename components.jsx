@@ -1,6 +1,19 @@
 // components.jsx — shared primitives + Header
 const { useState, useEffect } = React;
 
+function useIsLight() {
+  const [isLight, setIsLight] = useState(() => document.documentElement.getAttribute('data-theme') === 'light');
+  useEffect(() => {
+    const root = document.documentElement;
+    const update = () => setIsLight(root.getAttribute('data-theme') === 'light');
+    update();
+    const obs = new MutationObserver(update);
+    obs.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => obs.disconnect();
+  }, []);
+  return isLight;
+}
+
 function ImagePlaceholder({ label, sublabel, style, gradient }) {
   const bg = gradient || 'radial-gradient(ellipse at 35% 40%, #4A2E14 0%, #2C1A08 45%, #1A1210 100%)';
   return (
@@ -30,9 +43,9 @@ function GoldDivider({ style }) {
 
 function Tag({ children, variant = 'default' }) {
   const variants = {
-    default: { background: 'rgba(245,239,230,0.06)', color: 'rgba(245,239,230,0.55)', border: '1px solid rgba(245,239,230,0.12)' },
-    gold:    { background: 'rgba(200,150,90,0.12)', color: '#C8965A', border: '1px solid rgba(200,150,90,0.3)' },
-    coral:   { background: 'rgba(232,181,160,0.1)', color: '#E8B5A0', border: '1px solid rgba(232,181,160,0.25)' },
+    default: { background: 'rgba(var(--text-rgb),0.06)', color: 'var(--text-sub)', border: '1px solid rgba(var(--text-rgb),0.12)' },
+    gold:    { background: 'rgba(var(--gold-rgb),0.12)', color: 'var(--gold)', border: '1px solid rgba(var(--gold-rgb),0.3)' },
+    coral:   { background: 'rgba(var(--gold-rgb),0.08)', color: 'var(--coral)', border: '1px solid var(--coral)' },
   };
   return (
     <span style={{ ...variants[variant], fontSize: 11, letterSpacing: '0.1em', padding: '3px 10px', fontFamily: "'Noto Serif TC', serif", fontWeight: 300, display: 'inline-block' }}>
@@ -94,7 +107,7 @@ function AdminTabLogin({ onClose }) {
 
   return (
     <div>
-      <p style={{ fontFamily:"'Noto Serif TC',serif", fontSize:13, color:'rgba(245,239,230,0.45)', lineHeight:2, letterSpacing:'.04em', marginBottom:20 }}>
+      <p style={{ fontFamily:"'Noto Serif TC',serif", fontSize:13, color:'var(--text-mute)', lineHeight:2, letterSpacing:'.04em', marginBottom:20 }}>
         請登入管理員帳號，進入課程管理後台。
       </p>
 
@@ -113,10 +126,10 @@ function AdminTabLogin({ onClose }) {
         <input
           type="password" value={pw} onChange={e=>{setPw(e.target.value);setErr('');}}
           placeholder="管理員密碼" autoFocus
-          style={{ width:'100%', background:'rgba(200,150,90,0.06)', border:`1px solid ${err?'rgba(200,80,60,0.5)':'rgba(200,150,90,0.25)'}`, color:'#F0E8DE', fontFamily:"'Noto Serif TC',serif", fontSize:13, padding:'11px 14px', outline:'none', marginBottom: err?8:20, transition:'.25s' }}
+          style={{ width:'100%', background:'rgba(var(--gold-rgb),0.06)', border:`1px solid ${err?'rgba(200,80,60,0.5)':'rgba(var(--gold-rgb),0.25)'}`, color:'var(--text-main)', fontFamily:"'Noto Serif TC',serif", fontSize:13, padding:'11px 14px', outline:'none', marginBottom: err?8:20, transition:'.25s' }}
         />
-        {err && <div style={{ color:'#C86050', fontSize:12, marginBottom:16 }}>{err}</div>}
-        <button type="submit" style={{ width:'100%', fontFamily:"'Noto Serif TC',serif", fontSize:14, letterSpacing:'.15em', padding:'12px', background:'transparent', border:'1px solid rgba(245,239,230,0.2)', color:'rgba(245,239,230,0.6)', transition:'.3s' }}>
+        {err && <div style={{ color:'var(--danger, #C86050)', fontSize:12, marginBottom:16 }}>{err}</div>}
+        <button type="submit" style={{ width:'100%', fontFamily:"'Noto Serif TC',serif", fontSize:14, letterSpacing:'.15em', padding:'12px', background:'transparent', border:'1px solid rgba(var(--text-rgb),0.2)', color:'var(--nav-link)', transition:'.3s' }}>
           進入後台 →
         </button>
       </form>
@@ -126,6 +139,7 @@ function AdminTabLogin({ onClose }) {
 
 // ── Reserve Modal ─────────────────────────────────────────────────────────
 function ReserveModal({ onClose }) {
+  const isLight = useIsLight();
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -135,8 +149,8 @@ function ReserveModal({ onClose }) {
   }, [onClose]);
 
   return (
-    <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:600, background:'rgba(10,6,4,0.88)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'clamp(12px,3vw,32px)', animation:'fadeUp .25s ease' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:640, maxHeight:'92vh', background:'radial-gradient(ellipse at 50% 0%, #2A1810 0%, #1A1210 70%)', border:'1px solid rgba(200,150,90,0.2)', position:'relative', overflow:'hidden', boxShadow:'0 40px 120px rgba(0,0,0,0.6)' }}>
+    <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:600, background: isLight ? 'rgba(245,240,232,0.82)' : 'rgba(10,6,4,0.88)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'clamp(12px,3vw,32px)', animation:'fadeUp .25s ease' }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:640, maxHeight:'92vh', background: isLight ? 'var(--card-bg)' : 'radial-gradient(ellipse at 50% 0%, #2A1810 0%, #1A1210 70%)', border:'1px solid rgba(200,150,90,0.2)', position:'relative', overflow:'hidden', boxShadow: isLight ? '0 20px 60px rgba(0,0,0,0.08)' : '0 40px 120px rgba(0,0,0,0.6)' }}>
         <iframe src="reserve.html?modal=1" title="預約體驗" style={{ width:'100%', height:'min(92vh, 820px)', border:'none', display:'block', background:'transparent' }} />
       </div>
     </div>
@@ -145,6 +159,7 @@ function ReserveModal({ onClose }) {
 
 // ── Portal Modal ──────────────────────────────────────────────────────────
 function PortalModal({ onClose }) {
+  const isLight = useIsLight();
   const [tab, setTab] = useState('student');
   const [token, setToken] = useState('');
   const [err, setErr] = useState('');
@@ -162,21 +177,21 @@ function PortalModal({ onClose }) {
   };
 
   return (
-    <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:500, background:'rgba(20,14,8,0.85)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:400, background:'#1E1812', border:'1px solid rgba(200,150,90,0.25)', padding:'36px 32px', animation:'fadeUp .3s ease', position:'relative' }}>
+    <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:500, background: isLight ? 'rgba(245,240,232,0.82)' : 'rgba(20,14,8,0.85)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:400, background: isLight ? 'var(--card-bg)' : '#1E1812', border:'1px solid rgba(var(--gold-rgb),0.25)', padding:'36px 32px', animation:'fadeUp .3s ease', position:'relative', boxShadow: isLight ? '0 16px 48px rgba(0,0,0,0.08)' : '0 8px 40px rgba(0,0,0,0.6)' }}>
         {/* Close */}
-        <button onClick={onClose} style={{ position:'absolute', top:16, right:18, background:'none', border:'none', color:'rgba(245,239,230,0.35)', fontSize:18, lineHeight:1 }}>✕</button>
+        <button onClick={onClose} style={{ position:'absolute', top:16, right:18, background:'none', border:'none', color:'var(--text-mute)', fontSize:18, lineHeight:1 }}>✕</button>
 
         {/* Brand */}
         <div style={{ textAlign:'center', marginBottom:28 }}>
           <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:11, fontStyle:'italic', letterSpacing:'.3em', color:'rgba(200,150,90,0.6)', marginBottom:4 }}>Phinn-Phang</div>
-          <div style={{ fontFamily:"'Noto Serif TC',serif", fontSize:16, fontWeight:300, letterSpacing:'.15em', color:'#F0E8DE' }}>課程入口</div>
+          <div style={{ fontFamily:"'Noto Serif TC',serif", fontSize:16, fontWeight:300, letterSpacing:'.15em', color:'var(--text-main)' }}>課程入口</div>
         </div>
 
         {/* Tabs */}
         <div style={{ display:'flex', borderBottom:'1px solid rgba(200,150,90,0.15)', marginBottom:28 }}>
           {[['student','學員配方登錄'],['admin','管理員後台']].map(([key,label])=>(
-            <button key={key} onClick={()=>{setTab(key);setErr('');}} style={{ flex:1, background:'none', border:'none', borderBottom:`2px solid ${tab===key?'#C8965A':'transparent'}`, padding:'10px 0', fontFamily:"'Noto Serif TC',serif", fontSize:13, letterSpacing:'.1em', color:tab===key?'#C8965A':'rgba(245,239,230,0.4)', transition:'.25s', marginBottom:-1 }}>
+            <button key={key} onClick={()=>{setTab(key);setErr('');}} style={{ flex:1, background:'none', border:'none', borderBottom:`2px solid ${tab===key?'#C8965A':'transparent'}`, padding:'10px 0', fontFamily:"'Noto Serif TC',serif", fontSize:13, letterSpacing:'.1em', color:tab===key?'#C8965A':'var(--text-sub)', transition:'.25s', marginBottom:-1 }}>
               {label}
             </button>
           ))}
@@ -185,7 +200,7 @@ function PortalModal({ onClose }) {
         {/* Student tab */}
         {tab==='student' && (
           <div>
-            <p style={{ fontFamily:"'Noto Serif TC',serif", fontSize:13, color:'rgba(245,239,230,0.45)', lineHeight:2, letterSpacing:'.04em', marginBottom:20 }}>
+            <p style={{ fontFamily:"'Noto Serif TC',serif", fontSize:13, color:'var(--text-mute)', lineHeight:2, letterSpacing:'.04em', marginBottom:20 }}>
               請貼入老師傳給你的課程連結，進入今天的配方登錄頁。
             </p>
             <input
@@ -193,10 +208,10 @@ function PortalModal({ onClose }) {
               onKeyDown={e=>e.key==='Enter'&&handleStudent()}
               placeholder="貼入課程連結或 Token"
               autoFocus
-              style={{ width:'100%', background:'rgba(200,150,90,0.06)', border:`1px solid ${err?'rgba(200,80,60,0.5)':'rgba(200,150,90,0.25)'}`, color:'#F0E8DE', fontFamily:"'Noto Serif TC',serif", fontSize:13, padding:'11px 14px', outline:'none', marginBottom: err?8:20, transition:'.25s' }}
+              style={{ width:'100%', background:'rgba(200,150,90,0.06)', border:`1px solid ${err?'rgba(200,80,60,0.5)':'rgba(200,150,90,0.25)'}`, color:'var(--text-main)', fontFamily:"'Noto Serif TC',serif", fontSize:13, padding:'11px 14px', outline:'none', marginBottom: err?8:20, transition:'.25s' }}
             />
-            {err && <div style={{ color:'#C86050', fontSize:12, marginBottom:16, letterSpacing:'.04em' }}>{err}</div>}
-            <button onClick={handleStudent} style={{ width:'100%', fontFamily:"'Noto Serif TC',serif", fontSize:14, letterSpacing:'.15em', padding:'12px', background:'rgba(200,150,90,0.12)', border:'1px solid rgba(200,150,90,0.45)', color:'#C8965A', transition:'.3s' }}>
+            {err && <div style={{ color:'var(--danger, #C86050)', fontSize:12, marginBottom:16, letterSpacing:'.04em' }}>{err}</div>}
+            <button onClick={handleStudent} style={{ width:'100%', fontFamily:"'Noto Serif TC',serif", fontSize:14, letterSpacing:'.15em', padding:'12px', background:'rgba(var(--gold-rgb),0.12)', border:'1px solid var(--gold)', color:'var(--gold)', transition:'.3s' }}>
               進入配方登錄 →
             </button>
             {/* Demo link */}
@@ -205,9 +220,9 @@ function PortalModal({ onClose }) {
               if (!demo) return null;
               const url = `formula.html?token=pp-demo0001`;
               return (
-                <div style={{ marginTop:16, padding:'10px 14px', background:'rgba(245,239,230,0.03)', border:'1px dashed rgba(200,150,90,0.2)' }}>
-                  <div style={{ fontSize:11, color:'rgba(200,150,90,0.5)', letterSpacing:'.1em', marginBottom:6 }}>示範課程連結</div>
-                  <a href={url} style={{ fontSize:12, color:'rgba(200,150,90,0.7)', fontFamily:'monospace', wordBreak:'break-all' }}>{url}</a>
+                <div style={{ marginTop:16, padding:'10px 14px', background:'rgba(var(--text-rgb),0.03)', border:'1px dashed rgba(var(--gold-rgb),0.2)' }}>
+                  <div style={{ fontSize:11, color:'rgba(var(--gold-rgb),0.5)', letterSpacing:'.1em', marginBottom:6 }}>示範課程連結</div>
+                  <a href={url} style={{ fontSize:12, color:'rgba(var(--gold-rgb),0.7)', fontFamily:'monospace', wordBreak:'break-all' }}>{url}</a>
                 </div>
               );
             })()}
@@ -342,4 +357,4 @@ function NavBtn({ label, onClick }) {
   );
 }
 
-Object.assign(window, { ImagePlaceholder, SectionTitle, GoldDivider, Tag, CTAButton, Header, PortalModal, ReserveModal });
+Object.assign(window, { ImagePlaceholder, SectionTitle, GoldDivider, Tag, CTAButton, Header, PortalModal, ReserveModal, useIsLight });
