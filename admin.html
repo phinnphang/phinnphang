@@ -652,7 +652,7 @@ function AuditView() {
   return (
     <div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
-        <h2>作品審核 · 商品上架</h2>
+        <h2>作品管理</h2>
         <div style={{display:'flex',gap:4}}>
           {[['all','全部'],['willing','待審核'],['published','已上架']].map(([k,l])=>(
             <button key={k} className={`btn ${filter===k?'btn-primary':''}`} style={{padding:'6px 14px',fontSize:12}} onClick={()=>setFilter(k)}>{l}</button>
@@ -710,33 +710,23 @@ function AuditView() {
 
 // ── Works List ─────────────────────────────────────────────────────────────
 function WorksList({ works, courses }) {
-  const workUrl = (id) => `${window.location.origin}${window.location.pathname.replace('admin.html','work.html')}?id=${id}`;
   return (
-    <div>
-      <h2 style={{marginBottom:24}}>作品紀錄</h2>
-      {works.length===0 && <div style={{color:'rgba(245,239,230,0.3)',textAlign:'center',padding:60,border:'1px dashed rgba(200,150,90,0.15)'}}>尚無作品記錄</div>}
-      <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-        <thead>
-          <tr style={{borderBottom:'1px solid rgba(200,150,90,0.2)'}}>
-            {['作品名稱','學員','課程','日期','連結'].map(h=>(
-              <th key={h} style={{textAlign:'left',padding:'8px 12px',color:'rgba(200,150,90,0.65)',fontWeight:300,fontSize:11,letterSpacing:'.1em'}}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {works.map(w=>(
-            <tr key={w.id} style={{borderBottom:'1px solid rgba(245,239,230,0.05)'}}>
-              <td style={{padding:'10px 12px',color:'#F0E8DE'}}>{w.workName}</td>
-              <td style={{padding:'10px 12px',color:'rgba(245,239,230,0.65)'}}>{w.studentName}</td>
-              <td style={{padding:'10px 12px',color:'rgba(245,239,230,0.4)',fontSize:12}}>{w.courseName}</td>
-              <td style={{padding:'10px 12px',color:'rgba(245,239,230,0.4)',fontSize:12}}>{w.courseDate}</td>
-              <td style={{padding:'10px 12px'}}>
-                <a href={workUrl(w.id)} target="_blank" style={{color:'rgba(200,150,90,0.7)',fontSize:11,fontFamily:'monospace'}}>開啟 →</a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div style={{maxWidth:620,margin:'0 auto',padding:'60px 20px',textAlign:'center'}}>
+      <h2 style={{fontSize:24,letterSpacing:'.15em',color:'var(--text-title)',marginBottom:8}}>訂單管理</h2>
+      <div style={{fontSize:11,letterSpacing:'.3em',color:'var(--gold)',textTransform:'uppercase',fontStyle:'italic',marginBottom:48,opacity:0.85}}>Under Construction</div>
+      <div style={{border:'1px dashed var(--gold-border-soft)',padding:'48px 32px',background:'var(--gold-bg-faint)'}}>
+        <div style={{fontSize:16,color:'var(--text-sub)',letterSpacing:'.08em',marginBottom:24}}>建置中</div>
+        <div style={{fontSize:11,color:'var(--text-mute)',marginBottom:12,letterSpacing:'.2em'}}>FUTURE · 未來將在這裡管理</div>
+        <div style={{textAlign:'left',fontSize:13,color:'var(--text-sub)',lineHeight:2.2,letterSpacing:'.05em',maxWidth:360,margin:'0 auto'}}>
+          <div>· 學員作品上架後的訂單</div>
+          <div>· 訂單狀態追蹤</div>
+          <div>· 出貨記錄</div>
+          <div>· 收款狀態</div>
+        </div>
+        <div style={{marginTop:32,paddingTop:24,borderTop:'1px solid var(--gold-bg-faint)',fontSize:11,color:'var(--text-mute)',letterSpacing:'.1em'}}>
+          預計 Phase 8+ 推出
+        </div>
+      </div>
     </div>
   );
 }
@@ -909,8 +899,8 @@ function Admin() {
   const navItems = [
     { key: 'courses',      label: '課程管理' },
     { key: 'reservations', label: '預約管理' },
-    { key: 'audit',        label: '作品審核' },
-    { key: 'works',        label: '作品紀錄' },
+    { key: 'audit',        label: '作品管理' },
+    { key: 'works',        label: '訂單管理' },
     { key: 'settings',     label: '系統設定' },
   ];
 
