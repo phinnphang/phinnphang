@@ -240,26 +240,37 @@ function PortalModal({ onClose }) {
 
 function Header({ setPage, cartCount = 0, tweaks, setTweaks, onPortal, onReserve }) {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const isLight = useIsLight();
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', fn);
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
+  useEffect(() => {
+    document.body.classList.toggle('menu-open', menuOpen);
+    return () => document.body.classList.remove('menu-open');
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+    const onResize = () => { if (window.innerWidth > 768) setMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
   const navLinks = [
-    { label: '預約體驗', action: 'reserve' },
-    { label: '探索香氣', page: 'explore' },
-    { label: '關於 Phinn-Phang', page: 'about' },
+    { label: '預約體驗',          labelEn: 'Reserve', action: 'reserve' },
+    { label: '探索香氣',          labelEn: 'Explore', page: 'explore' },
+    { label: '關於 Phinn-Phang',  labelEn: 'About',   page: 'about' },
   ];
 
-  const getEffectiveIsLight = () => {
-    if (tweaks.theme === 'system') {
-      return !window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return tweaks.theme === 'light';
-  };
-
-  const isLight = getEffectiveIsLight();
   const toggleTheme = () => {
     // Cycle: system -> light -> dark -> system
     let nextTheme = 'system';
@@ -278,72 +289,115 @@ function Header({ setPage, cartCount = 0, tweaks, setTweaks, onPortal, onReserve
     return "目前：手動深色 (點擊切換至自動)";
   };
 
+  const handleNav = (l) => {
+    setMenuOpen(false);
+    if (l.action === 'reserve') onReserve?.();
+    else setPage(l.page);
+  };
+
+  const ThemeBtn = () => (
+    <button onClick={toggleTheme} style={{ background: 'none', border: 'none', color: 'var(--text-sub)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4, transition: '0.3s', position: 'relative' }} title={getThemeTitle()}>
+      {isLight ? (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      ) : (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      )}
+      {tweaks.theme === 'system' && (
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 5, height: 5, borderRadius: '50%', background: 'var(--gold)', boxShadow: '0 0 5px var(--gold)' }} />
+      )}
+    </button>
+  );
+
+  const CartBtn = () => (
+    <button onClick={() => {}} style={{ background: 'none', border: 'none', color: 'var(--text-sub)', display: 'flex', alignItems: 'center', gap: 6, padding: 0, position: 'relative', cursor: 'pointer' }}>
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 01-8 0"/>
+      </svg>
+      {cartCount > 0 && (
+        <span style={{ position: 'absolute', top: -6, right: -8, width: 15, height: 15, borderRadius: '50%', background: 'var(--gold)', color: 'var(--bg)', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{cartCount}</span>
+      )}
+    </button>
+  );
+
   return (
-    <header style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
-      height: 72, padding: '0 clamp(20px, 5vw, 60px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      background: scrolled ? 'var(--bg)' : 'transparent',
-      opacity: scrolled ? 0.96 : 1,
-      borderBottom: scrolled ? '1px solid var(--gold2)' : '1px solid transparent',
-      backdropFilter: scrolled ? 'blur(14px)' : 'none',
-      transition: 'all 0.45s ease',
-    }}>
-      {/* Logo */}
-      <div onClick={() => setPage('home')} style={{ cursor: 'pointer' }}>
-        <img 
-          src={isLight ? "uploads/logo_light.png" : "uploads/logo_dark.png"}
-          alt="Phinn-Phang scent lab" 
-          style={{ height: 38, width: 'auto', display: 'block', objectFit: 'contain', transition: '0.3s' }} 
-        />
-      </div>
+    <>
+      <header style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+        height: 72, padding: '0 clamp(20px, 5vw, 60px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: scrolled ? 'var(--bg)' : 'transparent',
+        opacity: scrolled ? 0.96 : 1,
+        borderBottom: scrolled ? '1px solid var(--gold2)' : '1px solid transparent',
+        backdropFilter: scrolled ? 'blur(14px)' : 'none',
+        transition: 'all 0.45s ease',
+      }}>
+        {/* Logo */}
+        <div onClick={() => setPage('home')} style={{ cursor: 'pointer' }}>
+          <img
+            src={isLight ? "uploads/logo_light.png" : "uploads/logo_dark.png"}
+            alt="Phinn-Phang scent lab"
+            style={{ height: 38, width: 'auto', display: 'block', objectFit: 'contain', transition: '0.3s' }}
+          />
+        </div>
 
-      {/* Nav */}
-      <nav style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-        {navLinks.map(l => (
-          <NavBtn key={l.label} label={l.label} onClick={() => l.action === 'reserve' ? onReserve?.() : setPage(l.page)} />
-        ))}
-        <button onClick={onPortal} style={{ background: 'none', border: '1px solid var(--gold)', color: 'var(--gold)', fontFamily:"'Noto Serif TC',serif", fontSize: 12, letterSpacing: '.12em', padding: '5px 14px', transition: '.25s', cursor: 'pointer' }}>課程入口</button>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginLeft: 8 }}>
-          {/* Theme Toggle */}
-          <button onClick={toggleTheme} style={{ background: 'none', border: 'none', color: 'var(--text-sub)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4, transition: '0.3s', position: 'relative' }} title={getThemeTitle()}>
-            {isLight ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-              </svg>
-            )}
-            {tweaks.theme === 'system' && (
-              <div style={{ position: 'absolute', top: 0, right: 0, width: 5, height: 5, borderRadius: '50%', background: 'var(--gold)', boxShadow: '0 0 5px var(--gold)' }} />
-            )}
-          </button>
+        {/* Desktop nav (≥ 769px) */}
+        <nav className="nav-desktop" style={{ gap: 32, alignItems: 'center' }}>
+          {navLinks.map(l => (
+            <NavBtn key={l.label} label={l.label} onClick={() => l.action === 'reserve' ? onReserve?.() : setPage(l.page)} />
+          ))}
+          <button onClick={onPortal} style={{ background: 'none', border: '1px solid var(--gold)', color: 'var(--gold)', fontFamily:"'Noto Serif TC',serif", fontSize: 12, letterSpacing: '.12em', padding: '5px 14px', transition: '.25s', cursor: 'pointer' }}>課程入口</button>
 
-          {/* Cart */}
-          <button onClick={() => {}} style={{ background: 'none', border: 'none', color: 'var(--text-sub)', display: 'flex', alignItems: 'center', gap: 6, padding: 0, position: 'relative', cursor: 'pointer' }}>
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-              <line x1="3" y1="6" x2="21" y2="6"/>
-              <path d="M16 10a4 4 0 01-8 0"/>
-            </svg>
-            {cartCount > 0 && (
-              <span style={{ position: 'absolute', top: -6, right: -8, width: 15, height: 15, borderRadius: '50%', background: 'var(--gold)', color: 'var(--bg)', fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>{cartCount}</span>
-            )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginLeft: 8 }}>
+            <ThemeBtn />
+            <CartBtn />
+          </div>
+        </nav>
+
+        {/* Mobile header bar (≤ 768px): theme + cart + hamburger */}
+        <div className="nav-hamburger" style={{ gap: 16, alignItems: 'center' }}>
+          <ThemeBtn />
+          <CartBtn />
+          <button
+            className={`hamburger-btn ${menuOpen ? 'open' : ''}`}
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label={menuOpen ? '關閉選單' : '開啟選單'}
+            aria-expanded={menuOpen}
+          >
+            <span className="line line-1"></span>
+            <span className="line line-2"></span>
+            <span className="line line-3"></span>
           </button>
         </div>
-      </nav>
-    </header>
+      </header>
+
+      {/* Mobile full-screen overlay: navLinks + 課程入口 */}
+      <div className={`mobile-menu-overlay ${menuOpen ? 'open' : ''}`}>
+        {navLinks.map(l => (
+          <button key={l.label} className="mobile-menu-item" onClick={() => handleNav(l)}>
+            {l.label}
+            <span className="en">{l.labelEn}</span>
+          </button>
+        ))}
+        <button className="mobile-menu-item" onClick={() => { setMenuOpen(false); onPortal?.(); }}>
+          課程入口
+          <span className="en">Portal</span>
+        </button>
+      </div>
+    </>
   );
 }
 
