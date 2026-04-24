@@ -1,13 +1,6 @@
 // HomePage.jsx
 const { useState } = React;
 
-const PRESCRIPTIONS = [
-  { id: 1, nameZh: '雨後書房', nameEn: 'After Rain Study', type: '空間噴霧', family: '木質調', notes: ['佛手柑 Bergamot', '茉莉 Jasmine', '檀香 Sandalwood'], price: 1280, vol: 30 },
-  { id: 2, nameZh: '舊日咖啡館', nameEn: 'Old Café Reverie', type: '織品噴霧', family: '東方調', notes: ['咖啡豆 Coffee', '廣藿香 Patchouli', '香草 Vanilla'], price: 1480, vol: 30 },
-  { id: 3, nameZh: '夜來香的自白', nameEn: 'Night Confessions', type: '擴香瓶', family: '花香調', notes: ['夜來香 Tuberose', '玫瑰 Rose', '麝香 Musk'], price: 1380, vol: 30 },
-  { id: 4, nameZh: '晨光薑茶', nameEn: 'Morning Ginger', type: '空間噴霧', family: '柑橘調', notes: ['薑 Ginger', '葡萄柚 Grapefruit', '廣藿香 Patchouli'], price: 1180, vol: 15 },
-];
-
 const FAMILIES = [
   { nameZh: '木質調', nameEn: 'Woody', notes: '雪松・檀香・廣藿香', gradient: 'radial-gradient(ellipse at 40% 35%, #5C3A1A 0%, #2A1808 50%, #1A1210 100%)' },
   { nameZh: '東方調', nameEn: 'Oriental', notes: '烏木・龍涎香・香草', gradient: 'radial-gradient(ellipse at 40% 35%, #4A2A10 0%, #241408 50%, #1A1210 100%)' },
@@ -63,7 +56,9 @@ function PrescriptionCard({ item, setPage }) {
   const [hov, setHov] = useState(false);
   const isDynamic = !!item.id && typeof item.id === 'string' && item.id.length > 5;
   const handleClick = () => {
-    if (isDynamic) {
+    if (item.isDemo) {
+      setPage('product');
+    } else if (isDynamic) {
       window.location.href = `work.html?id=${item.id}`;
     } else {
       setPage('product');
@@ -105,13 +100,15 @@ function PrescriptionCard({ item, setPage }) {
 }
 
 function PrescriptionsSection({ setPage }) {
-  const published = PP.getPublishedWorks();
-  const items = published.length > 0 ? published.slice(0, 6).map(w => ({
+  const demo = PP.getDemoWorks();
+  const real = PP.getPublishedWorks();
+  const items = [...real, ...demo].slice(0, 6).map(w => ({
     id: w.id, nameZh: w.workName, nameEn: w.studentName,
     type: w.productType, family: '學員配方',
     notes: (w.formula || []).slice(0, 3).map(f => `${f.name}${f.nameEn ? ' ' + f.nameEn : ''}`),
     price: w.price || 1280, vol: w.vol || 30,
-  })) : PRESCRIPTIONS;
+    isDemo: w.isDemo,
+  }));
   return (
     <section style={{ padding: 'clamp(64px, 8vw, 120px) 0', position: 'relative' }}>
       <div style={{ padding: '0 clamp(20px, 5vw, 80px)', marginBottom: 48 }}>

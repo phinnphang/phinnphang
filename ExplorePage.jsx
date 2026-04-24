@@ -1,7 +1,7 @@
 // ExplorePage.jsx — browse all published works (scent products)
 
 function ExplorePage({ setPage }) {
-  const [works] = React.useState(() => PP.getPublishedWorks());
+  const [works] = React.useState(() => [...PP.getPublishedWorks(), ...PP.getDemoWorks()]);
   const [filter, setFilter] = React.useState('all');
   const settings = PP.getSettings();
   const types = ['all', ...(settings.productTypes || [])];
@@ -46,7 +46,9 @@ function ExplorePage({ setPage }) {
       ) : (
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 28 }}>
           {list.map(w => (
-            <a key={w.id} href={`work.html?id=${w.id}`}
+            <a key={w.id}
+              href={w.isDemo ? '#' : `work.html?id=${w.id}`}
+              onClick={w.isDemo ? (e) => { e.preventDefault(); setPage?.('product'); } : undefined}
               style={{
                 background: '#231810', border: '1px solid rgba(200,150,90,0.18)', padding: '32px 28px',
                 textDecoration: 'none', color: 'inherit', transition: '.35s',

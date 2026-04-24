@@ -95,7 +95,7 @@ const PP = (() => {
   function deleteReservation(id) { save(KEYS.RESERVATIONS, getReservations().filter(r => r.id !== id)); }
 
   function getBookableCourses() { return getCourses().filter(c => c.bookable && c.date); }
-  function getPublishedWorks()  { return getWorks().filter(w => w.published && w.productType); }
+  function getPublishedWorks()  { return getWorks().filter(w => w.published && w.productType).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); }
 
   const RESERVATION_STATUSES = [
     { id: 'pending',   label: '待確認', color: '#C8965A' },
@@ -295,6 +295,34 @@ const PP = (() => {
     getCourses, saveCourse, deleteCourse, getCourseById,
     getWorks, saveWork,
     getBookableCourses, getPublishedWorks,
+    getDemoWorks() {
+      return [
+        { id:'demo-1', workName:'雨後書房', studentName:'Phinn-Phang 精選', productType:'空間噴霧', courseName:'示範作品', courseDate:'',
+          formula:[
+            { name:'佛手柑', nameEn:'Bergamot',   family:'citrus', layer:'top' },
+            { name:'茉莉',   nameEn:'Jasmine',    family:'floral', layer:'middle' },
+            { name:'檀香',   nameEn:'Sandalwood', family:'woody',  layer:'base' },
+          ], price:1280, vol:30, isDemo:true },
+        { id:'demo-2', workName:'舊日咖啡館', studentName:'Phinn-Phang 精選', productType:'織品噴霧', courseName:'示範作品', courseDate:'',
+          formula:[
+            { name:'咖啡豆', nameEn:'Coffee',    family:'gourmand', layer:'top' },
+            { name:'廣藿香', nameEn:'Patchouli', family:'oriental', layer:'middle' },
+            { name:'香草',   nameEn:'Vanilla',   family:'gourmand', layer:'base' },
+          ], price:1480, vol:30, isDemo:true },
+        { id:'demo-3', workName:'夜來香的自白', studentName:'Phinn-Phang 精選', productType:'擴香瓶', courseName:'示範作品', courseDate:'',
+          formula:[
+            { name:'夜來香', nameEn:'Tuberose', family:'floral',   layer:'top' },
+            { name:'玫瑰',   nameEn:'Rose',     family:'floral',   layer:'middle' },
+            { name:'麝香',   nameEn:'Musk',     family:'oriental', layer:'base' },
+          ], price:1380, vol:30, isDemo:true },
+        { id:'demo-4', workName:'晨光薑茶', studentName:'Phinn-Phang 精選', productType:'空間噴霧', courseName:'示範作品', courseDate:'',
+          formula:[
+            { name:'薑',     nameEn:'Ginger',     family:'spicy',    layer:'top' },
+            { name:'葡萄柚', nameEn:'Grapefruit', family:'citrus',   layer:'middle' },
+            { name:'廣藿香', nameEn:'Patchouli',  family:'oriental', layer:'base' },
+          ], price:1180, vol:15, isDemo:true },
+      ];
+    },
     getReservations, saveReservation, deleteReservation,
     getCourseByToken, getWorkById,
     genId, genToken,
