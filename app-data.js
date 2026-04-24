@@ -94,7 +94,7 @@ const PP = (() => {
   }
   function deleteReservation(id) { save(KEYS.RESERVATIONS, getReservations().filter(r => r.id !== id)); }
 
-  function getBookableCourses() { return getCourses().filter(c => c.bookable && c.date); }
+  function getBookableCourses() { return getCourses().filter(c => c.bookable && Array.isArray(c.slots) && c.slots.length > 0); }
   function getPublishedWorks()  { return getWorks().filter(w => w.published && w.productType).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); }
 
   const RESERVATION_STATUSES = [

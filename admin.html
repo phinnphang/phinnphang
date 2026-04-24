@@ -518,7 +518,7 @@ function CourseList({ courses, onCreate, onEdit, onCopy, onDelete, works }) {
                 <span className="tag" style={{borderColor:'rgba(245,239,230,0.15)',color:'rgba(245,239,230,0.4)'}}>{c.ingredients.length} 種香精</span>
                 {c.hasBase && <span className="tag" style={{borderColor:'rgba(123,158,110,0.3)',color:'rgba(123,158,110,0.7)'}}>含基底</span>}
               </div>
-              <div style={{fontSize:12,color:'rgba(245,239,230,0.35)',marginBottom:8}}>{c.date} · {wCount} 件作品</div>
+              <div style={{fontSize:12,color:'rgba(245,239,230,0.35)',marginBottom:8}}>{c.date || c.slots?.[0]?.date || '待定'} · {wCount} 件作品</div>
               <div style={{fontSize:11,color:'rgba(200,150,90,0.4)',fontFamily:'monospace',wordBreak:'break-all'}}>{url}</div>
             </div>
             <div style={{display:'flex',gap:6,flexShrink:0}}>
