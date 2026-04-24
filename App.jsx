@@ -101,19 +101,20 @@ function App() {
       
       if (isLight) {
         if (tweaks.colorTemp === 'violet') {
-          root.style.setProperty('--gold', '#8A7BB0');
+          root.style.setProperty('--gold', '#6B5A94');
           root.style.setProperty('--gold2', 'rgba(138,123,176,0.18)');
           root.style.setProperty('--coral', '#B08BA0');
           root.style.setProperty('--bg', '#F8F6FA');
           root.style.setProperty('--bg2', '#F0EAF5');
           root.style.setProperty('--bg3', '#E4D9EF');
         } else {
-          root.style.setProperty('--gold', '#A67C4A');
-          root.style.setProperty('--gold2', 'rgba(166,124,74,0.18)');
-          root.style.setProperty('--coral', '#D69A84');
-          root.style.setProperty('--bg', '#FCF9F5');
-          root.style.setProperty('--bg2', '#F5EFE6');
-          root.style.setProperty('--bg3', '#EDE4D7');
+          // amber light: defer to CSS [data-theme="light"] (clear JS overrides)
+          root.style.removeProperty('--gold');
+          root.style.removeProperty('--gold2');
+          root.style.removeProperty('--coral');
+          root.style.removeProperty('--bg');
+          root.style.removeProperty('--bg2');
+          root.style.removeProperty('--bg3');
         }
       } else {
         if (tweaks.colorTemp === 'violet') {
@@ -124,12 +125,13 @@ function App() {
           root.style.setProperty('--bg2', '#1A1820');
           root.style.setProperty('--bg3', '#2E2A3D');
         } else {
-          root.style.setProperty('--gold', '#C8965A');
-          root.style.setProperty('--gold2', 'rgba(200,150,90,0.25)');
-          root.style.setProperty('--coral', '#E8B5A0');
-          root.style.setProperty('--bg', '#1A1612');
-          root.style.setProperty('--bg2', '#201610');
-          root.style.setProperty('--bg3', '#3D2E20');
+          // amber dark: defer to CSS :root (clear JS overrides)
+          root.style.removeProperty('--gold');
+          root.style.removeProperty('--gold2');
+          root.style.removeProperty('--coral');
+          root.style.removeProperty('--bg');
+          root.style.removeProperty('--bg2');
+          root.style.removeProperty('--bg3');
         }
       }
     };
