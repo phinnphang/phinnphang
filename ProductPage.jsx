@@ -47,7 +47,7 @@ function IngredientBtn({ ing, active, onClick }) {
   const on = active || hov;
   return (
     <button onMouseOver={() => setHov(true)} onMouseOut={() => setHov(false)} onClick={() => onClick(ing)}
-      style={{ background: on ? 'rgba(200,150,90,0.15)' : 'rgba(245,239,230,0.04)', border: `1px solid ${on ? 'rgba(200,150,90,0.55)' : 'rgba(245,239,230,0.12)'}`, color: on ? '#C8965A' : 'rgba(245,239,230,0.65)', padding: '5px 13px', margin: '3px', cursor: 'pointer', fontFamily: "'Cormorant Garamond', serif", fontSize: 14, letterSpacing: '0.05em', transition: 'all 0.25s', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+      style={{ background: on ? 'rgba(var(--gold-rgb),0.15)' : 'rgba(var(--text-rgb),0.04)', border: `1px solid ${on ? 'rgba(var(--gold-rgb),0.55)' : 'rgba(var(--text-rgb),0.12)'}`, color: on ? 'var(--gold)' : 'var(--text-sub)', padding: '5px 13px', margin: '3px', cursor: 'pointer', fontFamily: "'Cormorant Garamond', serif", fontSize: 14, letterSpacing: '0.05em', transition: 'all 0.25s', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
       <em style={{ fontStyle: 'italic' }}>{ing.en}</em>
       <span style={{ opacity: 0.65, fontSize: 12 }}>{ing.zh}</span>
     </button>
@@ -58,20 +58,20 @@ function IngredientPopup({ ing, onClose }) {
   if (!ing) return null;
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,14,8,0.75)', backdropFilter: 'blur(4px)' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#231810', border: '1px solid rgba(200,150,90,0.35)', padding: '36px 40px', maxWidth: 340, width: '90%', position: 'relative', animation: 'fadeUp 0.3s ease' }}>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.3em', color: 'rgba(200,150,90,0.5)', textTransform: 'uppercase', marginBottom: 12 }}>香材介紹 · Ingredient</div>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontStyle: 'italic', color: '#F5EFE6', lineHeight: 1, marginBottom: 4 }}>{ing.en}</div>
-        <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 16, color: 'rgba(200,150,90,0.8)', marginBottom: 24, letterSpacing: '0.1em' }}>{ing.zh}</div>
-        <div style={{ width: 24, height: 1, background: 'rgba(200,150,90,0.3)', marginBottom: 20 }} />
-        <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, color: 'rgba(245,239,230,0.6)', lineHeight: 2, letterSpacing: '0.04em' }}>{ing.desc}</p>
-        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', color: 'rgba(245,239,230,0.35)', fontSize: 18, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--card-bg)', border: '1px solid rgba(var(--gold-rgb),0.35)', padding: '36px 40px', maxWidth: 340, width: '90%', position: 'relative', animation: 'fadeUp 0.3s ease' }}>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.3em', color: 'rgba(var(--gold-rgb),0.5)', textTransform: 'uppercase', marginBottom: 12 }}>香材介紹 · Ingredient</div>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontStyle: 'italic', color: 'var(--text-main)', lineHeight: 1, marginBottom: 4 }}>{ing.en}</div>
+        <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 16, color: 'rgba(var(--gold-rgb),0.8)', marginBottom: 24, letterSpacing: '0.1em' }}>{ing.zh}</div>
+        <div style={{ width: 24, height: 1, background: 'rgba(var(--gold-rgb),0.3)', marginBottom: 20 }} />
+        <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 14, color: 'rgba(var(--text-rgb),0.6)', lineHeight: 2, letterSpacing: '0.04em' }}>{ing.desc}</p>
+        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', color: 'var(--text-mute)', fontSize: 18, cursor: 'pointer', lineHeight: 1 }}>✕</button>
       </div>
     </div>
   );
 }
 
 function SmokeParticle({ style }) {
-  return <div style={{ position: 'absolute', borderRadius: '50%', filter: 'blur(18px)', background: 'rgba(200,150,90,0.12)', animation: 'smokeRise 4s ease-out infinite', ...style }} />;
+  return <div style={{ position: 'absolute', borderRadius: '50%', filter: 'blur(18px)', background: 'rgba(var(--gold-rgb),0.12)', animation: 'smokeRise 4s ease-out infinite', ...style }} />;
 }
 
 function FragrancePyramid({ notes }) {
@@ -79,8 +79,8 @@ function FragrancePyramid({ notes }) {
   const toggle = (ing) => setActive(prev => prev?.en === ing.en ? null : ing);
 
   const LAYERS = [
-    { key: 'top', labelZh: '前調', labelEn: 'Top Notes', items: notes.top, pct: '4%', side: '22%', fill: 'rgba(200,150,90,0.07)' },
-    { key: 'middle', labelZh: '中調', labelEn: 'Heart Notes', items: notes.middle, pct: '36%', side: '9%', fill: 'rgba(200,150,90,0.04)' },
+    { key: 'top', labelZh: '前調', labelEn: 'Top Notes', items: notes.top, pct: '4%', side: '22%', fill: 'rgba(var(--gold-rgb),0.07)' },
+    { key: 'middle', labelZh: '中調', labelEn: 'Heart Notes', items: notes.middle, pct: '36%', side: '9%', fill: 'rgba(var(--gold-rgb),0.04)' },
     { key: 'base', labelZh: '後調', labelEn: 'Base Notes', items: notes.base, pct: '67%', side: '0%', fill: 'rgba(61,46,32,0.25)' },
   ];
 
@@ -106,10 +106,10 @@ function FragrancePyramid({ notes }) {
       {/* Note layers */}
       {LAYERS.map(layer => (
         <div key={layer.key} style={{ position: 'absolute', top: layer.pct, left: layer.side, right: layer.side, textAlign: 'center', padding: '0 8px' }}>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.3em', color: 'rgba(200,150,90,0.55)', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 6 }}>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.3em', color: 'rgba(var(--gold-rgb),0.55)', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 6 }}>
             {layer.labelEn}
           </div>
-          <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 11, letterSpacing: '0.2em', color: 'rgba(245,239,230,0.35)', marginBottom: 10 }}>
+          <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 11, letterSpacing: '0.2em', color: 'var(--text-mute)', marginBottom: 10 }}>
             {layer.labelZh}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 2 }}>
@@ -141,7 +141,7 @@ function EmotionTags({ emotions }) {
       {emotions.map((em, i) => (
         <div key={em}
           onMouseOver={() => setHovIdx(i)} onMouseOut={() => setHovIdx(null)}
-          style={{ transform: `rotate(${hovIdx === i ? 0 : angles[i % angles.length]}deg)`, transition: 'all 0.3s ease', fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '0.15em', color: hovIdx === i ? '#C8965A' : 'rgba(245,239,230,0.55)', background: hovIdx === i ? 'rgba(200,150,90,0.1)' : 'rgba(245,239,230,0.04)', border: `1px solid ${hovIdx === i ? 'rgba(200,150,90,0.4)' : 'rgba(245,239,230,0.1)'}`, padding: '7px 16px', cursor: 'default', boxShadow: hovIdx === i ? '0 0 20px rgba(200,150,90,0.12)' : 'none' }}>
+          style={{ transform: `rotate(${hovIdx === i ? 0 : angles[i % angles.length]}deg)`, transition: 'all 0.3s ease', fontFamily: "'Noto Serif TC', serif", fontSize: 14, letterSpacing: '0.15em', color: hovIdx === i ? 'var(--gold)' : 'var(--text-sub)', background: hovIdx === i ? 'rgba(var(--gold-rgb),0.1)' : 'rgba(var(--text-rgb),0.04)', border: `1px solid ${hovIdx === i ? 'rgba(var(--gold-rgb),0.4)' : 'rgba(var(--text-rgb),0.1)'}`, padding: '7px 16px', cursor: 'default', boxShadow: hovIdx === i ? '0 0 20px rgba(var(--gold-rgb),0.12)' : 'none' }}>
           {em}
         </div>
       ))}
@@ -154,7 +154,7 @@ function JourneyTimeline({ journey }) {
   return (
     <div style={{ position: 'relative', padding: '20px 0 40px' }}>
       {/* Connecting line */}
-      <div style={{ position: 'absolute', top: 44, left: '12.5%', right: '12.5%', height: 1, background: 'linear-gradient(to right, rgba(200,150,90,0.4), rgba(200,150,90,0.15))', zIndex: 0 }} />
+      <div style={{ position: 'absolute', top: 44, left: '12.5%', right: '12.5%', height: 1, background: 'linear-gradient(to right, rgba(var(--gold-rgb),0.4), rgba(var(--gold-rgb),0.15))', zIndex: 0 }} />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, position: 'relative', zIndex: 1 }}>
         {journey.map((stage, i) => (
@@ -164,7 +164,7 @@ function JourneyTimeline({ journey }) {
               <div style={{ position: 'absolute', inset: 4, borderRadius: '50%', background: `radial-gradient(circle, ${stage.color}60 0%, transparent 70%)` }} />
             </div>
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: 'italic', color: stage.color, letterSpacing: '0.1em', marginBottom: 10 }}>{stage.time}</div>
-            <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 12, color: 'rgba(245,239,230,0.45)', lineHeight: 1.8, letterSpacing: '0.04em' }}>{stage.desc}</p>
+            <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 12, color: 'var(--text-mute)', lineHeight: 1.8, letterSpacing: '0.04em' }}>{stage.desc}</p>
           </div>
         ))}
       </div>
@@ -175,7 +175,7 @@ function JourneyTimeline({ journey }) {
 // ─── Product Page ────────────────────────────────────────────────────────────
 function ProductSection({ title, zh, en, children, bg }) {
   return (
-    <section style={{ padding: 'clamp(56px, 7vw, 96px) clamp(20px, 6vw, 100px)', background: bg || 'transparent', borderTop: '1px solid rgba(200,150,90,0.08)' }}>
+    <section style={{ padding: 'clamp(56px, 7vw, 96px) clamp(20px, 6vw, 100px)', background: bg || 'transparent', borderTop: '1px solid rgba(var(--gold-rgb),0.08)' }}>
       <SectionTitle zh={zh} en={en} />
       {children}
     </section>
@@ -196,7 +196,7 @@ function ProductPage({ setPage }) {
       {/* Hero Gallery */}
       <div style={{ height: '65vh', minHeight: 420, position: 'relative', background: 'var(--hero-bg)', transition: 'background 0.4s ease' }}>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(200,150,90,0.2)', letterSpacing: '0.2em', textAlign: 'center', lineHeight: 2.5 }}>
+          <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(var(--gold-rgb),0.2)', letterSpacing: '0.2em', textAlign: 'center', lineHeight: 2.5 }}>
             <div>// 產品主圖 //</div>
             <div style={{ fontSize: 9, opacity: 0.6 }}>product hero · full bleed</div>
           </div>
@@ -207,26 +207,26 @@ function ProductPage({ setPage }) {
       </div>
 
       {/* Product Info */}
-      <section style={{ padding: 'clamp(40px, 5vw, 72px) clamp(20px, 6vw, 100px)', display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'start', borderBottom: '1px solid rgba(200,150,90,0.08)' }}>
+      <section style={{ padding: 'clamp(40px, 5vw, 72px) clamp(20px, 6vw, 100px)', display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'start', borderBottom: '1px solid rgba(var(--gold-rgb),0.08)' }}>
         <div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
             <Tag variant="gold">{p.family}</Tag>
             <Tag variant="default">{p.familyEn}</Tag>
           </div>
           <h1 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 300, letterSpacing: '0.15em', color: 'var(--text-main)', lineHeight: 1.2, marginBottom: 6 }}>{p.nameZh}</h1>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(16px, 2vw, 22px)', fontStyle: 'italic', color: 'rgba(200,150,90,0.7)', letterSpacing: '0.15em', marginBottom: 20 }}>{p.nameEn}</div>
-          <button onClick={() => setPage('home')} style={{ background: 'none', border: 'none', fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'rgba(245,239,230,0.45)', letterSpacing: '0.1em', cursor: 'pointer', padding: 0, marginBottom: 8, textDecoration: 'underline', textDecorationColor: 'rgba(245,239,230,0.2)', textUnderlineOffset: 3 }}>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(16px, 2vw, 22px)', fontStyle: 'italic', color: 'rgba(var(--gold-rgb),0.7)', letterSpacing: '0.15em', marginBottom: 20 }}>{p.nameEn}</div>
+          <button onClick={() => setPage('home')} style={{ background: 'none', border: 'none', fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'var(--text-mute)', letterSpacing: '0.1em', cursor: 'pointer', padding: 0, marginBottom: 8, textDecoration: 'underline', textDecorationColor: 'rgba(var(--text-rgb),0.2)', textUnderlineOffset: 3 }}>
             {p.creator.nameZh} {p.creator.nameEn}
           </button>
-          <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'rgba(245,239,230,0.3)', letterSpacing: '0.1em' }}>{p.volume} ml</div>
+          <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'rgba(var(--text-rgb),0.3)', letterSpacing: '0.1em' }}>{p.volume} ml</div>
         </div>
 
         <div style={{ textAlign: 'right', minWidth: 180 }}>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(24px, 3vw, 38px)', color: '#C8965A', letterSpacing: '0.05em', marginBottom: 20 }}>NT${p.price.toLocaleString()}</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(24px, 3vw, 38px)', color: 'var(--gold)', letterSpacing: '0.05em', marginBottom: 20 }}>NT${p.price.toLocaleString()}</div>
           <button onClick={handleCart} style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, letterSpacing: '0.2em', background: cartAdded ? 'var(--gold2)' : 'transparent', border: `1px solid ${cartAdded ? 'var(--gold)' : 'var(--gold2)'}`, color: cartAdded ? 'var(--gold)' : 'var(--text-main)', padding: '13px 28px', cursor: 'pointer', transition: 'all 0.4s', display: 'block', width: '100%', marginBottom: 10 }}>
             {cartAdded ? '✓ 已加入' : '加入購物車'}
           </button>
-          <button style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 11, letterSpacing: '0.15em', background: 'transparent', border: '1px solid rgba(245,239,230,0.1)', color: 'rgba(245,239,230,0.35)', padding: '10px 28px', cursor: 'pointer', width: '100%' }}>
+          <button style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 11, letterSpacing: '0.15em', background: 'transparent', border: '1px solid rgba(var(--text-rgb),0.1)', color: 'var(--text-mute)', padding: '10px 28px', cursor: 'pointer', width: '100%' }}>
             試聞小樣
           </button>
         </div>
@@ -243,11 +243,11 @@ function ProductPage({ setPage }) {
       {/* Narrative */}
       <ProductSection zh="創作者的香氣敘事" en="The Creator's Narrative">
         <div style={{ maxWidth: 620, position: 'relative' }}>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 48, color: 'rgba(200,150,90,0.15)', lineHeight: 1, marginBottom: -16, marginLeft: -8 }}>"</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 48, color: 'rgba(var(--gold-rgb),0.15)', lineHeight: 1, marginBottom: -16, marginLeft: -8 }}>"</div>
           {p.narrative.map((para, i) => (
-            <p key={i} style={{ fontFamily: i === 0 ? "'Noto Serif TC', serif" : "'Noto Serif TC', serif", fontSize: i === 0 ? 18 : 14, fontWeight: i === 0 ? 400 : 300, color: i === 0 ? 'rgba(245,239,230,0.85)' : 'rgba(245,239,230,0.55)', lineHeight: 2.2, letterSpacing: '0.07em', marginBottom: i === p.narrative.length - 1 ? 0 : 28 }}>{para}</p>
+            <p key={i} style={{ fontFamily: i === 0 ? "'Noto Serif TC', serif" : "'Noto Serif TC', serif", fontSize: i === 0 ? 18 : 14, fontWeight: i === 0 ? 400 : 300, color: i === 0 ? 'rgba(var(--text-rgb),0.85)' : 'var(--text-sub)', lineHeight: 2.2, letterSpacing: '0.07em', marginBottom: i === p.narrative.length - 1 ? 0 : 28 }}>{para}</p>
           ))}
-          <div style={{ marginTop: 36, paddingTop: 24, borderTop: '1px solid rgba(200,150,90,0.15)', fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: 'italic', color: 'rgba(200,150,90,0.6)', letterSpacing: '0.1em' }}>
+          <div style={{ marginTop: 36, paddingTop: 24, borderTop: '1px solid rgba(var(--gold-rgb),0.15)', fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: 'italic', color: 'rgba(var(--gold-rgb),0.6)', letterSpacing: '0.1em' }}>
             — {p.creator.nameZh}，2026 年春
           </div>
         </div>
@@ -255,7 +255,7 @@ function ProductPage({ setPage }) {
 
       {/* Emotion Tags */}
       <ProductSection zh="此時此刻,適合你嗎" en="Mood & Occasion" bg="rgba(0,0,0,0.12)">
-        <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'rgba(245,239,230,0.35)', letterSpacing: '0.08em', lineHeight: 2, marginBottom: 36 }}>
+        <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'var(--text-mute)', letterSpacing: '0.08em', lineHeight: 2, marginBottom: 36 }}>
           這款香水,適合某種特定的狀態。你是否也在其中?
         </p>
         <EmotionTags emotions={p.emotions} />
@@ -263,7 +263,7 @@ function ProductPage({ setPage }) {
 
       {/* Journey Timeline */}
       <ProductSection zh="香氣旅程" en="Fragrance Journey">
-        <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'rgba(245,239,230,0.35)', letterSpacing: '0.08em', lineHeight: 2, marginBottom: 48 }}>
+        <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'var(--text-mute)', letterSpacing: '0.08em', lineHeight: 2, marginBottom: 48 }}>
           噴上之後,香氣如何隨時間演變。每個階段都是一種不同的相遇。
         </p>
         <JourneyTimeline journey={p.journey} />
@@ -272,17 +272,17 @@ function ProductPage({ setPage }) {
       {/* Creator Bio */}
       <ProductSection zh="關於創作者" en="About the Creator" bg="rgba(0,0,0,0.15)">
         <div style={{ display: 'flex', gap: 36, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          <div style={{ width: 100, height: 100, borderRadius: '50%', background: p.creator.gradient, border: '1px solid rgba(200,150,90,0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(200,150,90,0.3)', letterSpacing: '0.08em' }}>肖像</div>
+          <div style={{ width: 100, height: 100, borderRadius: '50%', background: p.creator.gradient, border: '1px solid rgba(var(--gold-rgb),0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(var(--gold-rgb),0.3)', letterSpacing: '0.08em' }}>肖像</div>
           </div>
           <div style={{ flex: 1, minWidth: 220 }}>
             <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 22, fontWeight: 400, letterSpacing: '0.15em', color: 'var(--text-main)', marginBottom: 3 }}>{p.creator.nameZh}</div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, fontStyle: 'italic', letterSpacing: '0.2em', color: 'rgba(200,150,90,0.6)', marginBottom: 14 }}>{p.creator.nameEn}</div>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 12, fontStyle: 'italic', letterSpacing: '0.2em', color: 'rgba(var(--gold-rgb),0.6)', marginBottom: 14 }}>{p.creator.nameEn}</div>
             <div style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
               {p.creator.tags.map(t => <Tag key={t} variant="gold">{t}</Tag>)}
             </div>
-            <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'rgba(245,239,230,0.5)', lineHeight: 2, letterSpacing: '0.05em', marginBottom: 20 }}>{p.creator.bio}</p>
-            <button onClick={() => setPage('home')} style={{ background: 'none', border: 'none', fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: 'italic', color: 'rgba(200,150,90,0.7)', letterSpacing: '0.1em', cursor: 'pointer', padding: 0, textDecoration: 'underline', textDecorationColor: 'rgba(200,150,90,0.3)', textUnderlineOffset: 3 }}>
+            <p style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 13, color: 'var(--text-sub)', lineHeight: 2, letterSpacing: '0.05em', marginBottom: 20 }}>{p.creator.bio}</p>
+            <button onClick={() => setPage('home')} style={{ background: 'none', border: 'none', fontFamily: "'Cormorant Garamond', serif", fontSize: 13, fontStyle: 'italic', color: 'rgba(var(--gold-rgb),0.7)', letterSpacing: '0.1em', cursor: 'pointer', padding: 0, textDecoration: 'underline', textDecorationColor: 'rgba(var(--gold-rgb),0.3)', textUnderlineOffset: 3 }}>
               查看 {p.creator.nameZh} 的全部作品 →
             </button>
           </div>
@@ -308,16 +308,16 @@ function SimilarCard({ item }) {
       style={{ cursor: 'pointer', border: `1px solid ${hov ? 'var(--gold)' : 'var(--gold2)'}`, background: hov ? 'var(--card-bg)' : 'transparent', transition: 'all 0.35s', overflow: 'hidden' }}>
       <div style={{ aspectRatio: '4/3', background: item.gradient, position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(200,150,90,0.2)', letterSpacing: '0.12em' }}>// 情境照 //</div>
+          <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(var(--gold-rgb),0.2)', letterSpacing: '0.12em' }}>// 情境照 //</div>
         </div>
-        {hov && <div style={{ position: 'absolute', inset: 0, background: 'rgba(200,150,90,0.04)' }} />}
+        {hov && <div style={{ position: 'absolute', inset: 0, background: 'rgba(var(--gold-rgb),0.04)' }} />}
       </div>
       <div style={{ padding: '16px 18px' }}>
         <div style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 16, fontWeight: 400, letterSpacing: '0.1em', color: 'var(--text-main)', marginBottom: 2 }}>{item.nameZh}</div>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, fontStyle: 'italic', color: 'rgba(200,150,90,0.55)', letterSpacing: '0.1em', marginBottom: 10 }}>{item.nameEn}</div>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 11, fontStyle: 'italic', color: 'rgba(var(--gold-rgb),0.55)', letterSpacing: '0.1em', marginBottom: 10 }}>{item.nameEn}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Tag variant="gold">{item.family}</Tag>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: '#C8965A' }}>NT${item.price.toLocaleString()}</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: 'var(--gold)' }}>NT${item.price.toLocaleString()}</div>
         </div>
       </div>
     </div>
