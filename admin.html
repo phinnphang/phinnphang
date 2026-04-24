@@ -878,6 +878,18 @@ function Admin() {
   const refresh = () => { setCourses(PP.getCourses()); setWorks(PP.getWorks()); };
 
   const handleSave = (c) => {
+    // === Fix 11 validation ===
+    if (c.bookable) {
+      if (!c.slots || c.slots.length === 0) {
+        alert('勾選「開放預約」後,請至少新增 1 個可預約時段');
+        return;
+      }
+      if (c.slots.some(s => !s.date || !s.time)) {
+        alert('每個可預約時段都必須填寫日期與時間');
+        return;
+      }
+    }
+    // === end validation ===
     PP.saveCourse(c);
     refresh();
     setEditing(null);
