@@ -44,7 +44,7 @@ function ExplorePage({ setPage }) {
           </div>
         </div>
       ) : (
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 28 }}>
+        <div className="rwd-grid-auto" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 28 }}>
           {list.map(w => (
             <a key={w.id}
               href={w.isDemo ? '#' : `work.html?id=${w.id}`}

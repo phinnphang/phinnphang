@@ -77,9 +77,10 @@ function AdminTabLogin({ onClose }) {
         client_id: settings.googleClientId,
         callback: handleGoogleLogin
       });
+      const btnWidth = Math.max(200, Math.min(334, window.innerWidth - 96));
       window.google.accounts.id.renderButton(
         document.getElementById("googleBtnSide"),
-        { theme: "outline", size: "large", width: 334, text: "signin_with" }
+        { theme: "outline", size: "large", width: btnWidth, text: "signin_with" }
       );
     }
   }, [settings.googleClientId]);
@@ -113,7 +114,9 @@ function AdminTabLogin({ onClose }) {
 
       {settings.googleClientId && (
         <div style={{marginBottom:24}}>
-          <div id="googleBtnSide"></div>
+          <div className="rwd-google-btn-wrap">
+            <div id="googleBtnSide"></div>
+          </div>
           <div style={{display:'flex', alignItems:'center', gap:10, margin:'20px 0'}}>
             <div style={{flex:1, height:1, background:'rgba(200,150,90,0.1)'}}></div>
             <div style={{fontSize:11, color:'rgba(200,150,90,0.3)', letterSpacing:'.1em'}}>或使用密碼</div>
@@ -150,7 +153,7 @@ function ReserveModal({ onClose }) {
 
   return (
     <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:600, background: isLight ? 'rgba(245,240,232,0.82)' : 'rgba(10,6,4,0.88)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'clamp(12px,3vw,32px)', animation:'fadeUp .25s ease' }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:640, maxHeight:'92vh', background: isLight ? 'var(--card-bg)' : 'radial-gradient(ellipse at 50% 0%, #2A1810 0%, #1A1210 70%)', border:'1px solid rgba(200,150,90,0.2)', position:'relative', overflow:'hidden', boxShadow: isLight ? '0 20px 60px rgba(0,0,0,0.08)' : '0 40px 120px rgba(0,0,0,0.6)' }}>
+      <div className="rwd-modal-body" onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:640, maxHeight:'92vh', background: isLight ? 'var(--card-bg)' : 'radial-gradient(ellipse at 50% 0%, #2A1810 0%, #1A1210 70%)', border:'1px solid rgba(200,150,90,0.2)', position:'relative', overflow:'hidden', boxShadow: isLight ? '0 20px 60px rgba(0,0,0,0.08)' : '0 40px 120px rgba(0,0,0,0.6)' }}>
         <iframe src="reserve.html?modal=1" title="預約體驗" style={{ width:'100%', height:'min(92vh, 820px)', border:'none', display:'block', background:'transparent' }} />
       </div>
     </div>
@@ -178,7 +181,7 @@ function PortalModal({ onClose }) {
 
   return (
     <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:500, background: isLight ? 'rgba(245,240,232,0.82)' : 'rgba(20,14,8,0.85)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:400, background: isLight ? 'var(--card-bg)' : '#1E1812', border:'1px solid rgba(var(--gold-rgb),0.25)', padding:'36px 32px', animation:'fadeUp .3s ease', position:'relative', boxShadow: isLight ? '0 16px 48px rgba(0,0,0,0.08)' : '0 8px 40px rgba(0,0,0,0.6)' }}>
+      <div className="rwd-modal-body" onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:400, background: isLight ? 'var(--card-bg)' : '#1E1812', border:'1px solid rgba(var(--gold-rgb),0.25)', padding:'36px 32px', animation:'fadeUp .3s ease', position:'relative', boxShadow: isLight ? '0 16px 48px rgba(0,0,0,0.08)' : '0 8px 40px rgba(0,0,0,0.6)' }}>
         {/* Close */}
         <button onClick={onClose} style={{ position:'absolute', top:16, right:18, background:'none', border:'none', color:'var(--text-mute)', fontSize:18, lineHeight:1 }}>✕</button>
 

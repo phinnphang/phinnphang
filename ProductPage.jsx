@@ -156,7 +156,7 @@ function JourneyTimeline({ journey }) {
       {/* Connecting line */}
       <div style={{ position: 'absolute', top: 44, left: '12.5%', right: '12.5%', height: 1, background: 'linear-gradient(to right, rgba(var(--gold-rgb),0.4), rgba(var(--gold-rgb),0.15))', zIndex: 0 }} />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, position: 'relative', zIndex: 1 }}>
+      <div className="rwd-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, position: 'relative', zIndex: 1 }}>
         {journey.map((stage, i) => (
           <div key={i} style={{ textAlign: 'center' }}>
             {/* Abstract blob */}
@@ -194,7 +194,7 @@ function ProductPage({ setPage }) {
   return (
     <div>
       {/* Hero Gallery */}
-      <div style={{ height: '65vh', minHeight: 420, position: 'relative', background: 'var(--hero-bg)', transition: 'background 0.4s ease' }}>
+      <div className="rwd-hero" style={{ height: '65vh', minHeight: 420, position: 'relative', background: 'var(--hero-bg)', transition: 'background 0.4s ease' }}>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ fontFamily: 'monospace', fontSize: 10, color: 'rgba(var(--gold-rgb),0.2)', letterSpacing: '0.2em', textAlign: 'center', lineHeight: 2.5 }}>
             <div>// 產品主圖 //</div>
@@ -207,7 +207,7 @@ function ProductPage({ setPage }) {
       </div>
 
       {/* Product Info */}
-      <section style={{ padding: 'clamp(40px, 5vw, 72px) clamp(20px, 6vw, 100px)', display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'start', borderBottom: '1px solid rgba(var(--gold-rgb),0.08)' }}>
+      <section className="rwd-info-grid" style={{ padding: 'clamp(40px, 5vw, 72px) clamp(20px, 6vw, 100px)', display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'start', borderBottom: '1px solid rgba(var(--gold-rgb),0.08)' }}>
         <div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
             <Tag variant="gold">{p.family}</Tag>
@@ -271,7 +271,7 @@ function ProductPage({ setPage }) {
 
       {/* Creator Bio */}
       <ProductSection zh="關於創作者" en="About the Creator" bg="rgba(0,0,0,0.15)">
-        <div style={{ display: 'flex', gap: 36, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div className="rwd-stack" style={{ display: 'flex', gap: 36, alignItems: 'flex-start', flexWrap: 'wrap' }}>
           <div style={{ width: 100, height: 100, borderRadius: '50%', background: p.creator.gradient, border: '1px solid rgba(var(--gold-rgb),0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(var(--gold-rgb),0.3)', letterSpacing: '0.08em' }}>肖像</div>
           </div>
@@ -291,7 +291,7 @@ function ProductPage({ setPage }) {
 
       {/* Similar Works */}
       <ProductSection zh="也許你也會喜歡" en="You May Also Like">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+        <div className="rwd-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
           {p.similar.map((s, i) => (
             <SimilarCard key={i} item={s} />
           ))}

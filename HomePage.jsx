@@ -146,7 +146,7 @@ function FamiliesSection() {
   return (
     <section style={{ padding: 'clamp(64px, 8vw, 120px) clamp(20px, 5vw, 80px)', background: 'rgba(0,0,0,0.2)' }}>
       <SectionTitle zh="依香調家族探索" en="Explore by Fragrance Family" />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+      <div className="rwd-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         {FAMILIES.map(f => <FamilyCard key={f.nameZh} fam={f} />)}
       </div>
     </section>
