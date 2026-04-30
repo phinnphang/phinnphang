@@ -503,12 +503,15 @@ function CourseEditor({ course: init, onSave, onCancel, settings }) {
 }
 
 // ── Course List ────────────────────────────────────────────────────────────
-function CourseList({ courses, onCreate, onEdit, onCopy, onDelete, works }) {
+function CourseList({ courses, onCreate, onEdit, onCopy, onDelete, works, msg }) {
   return (
     <div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:24}}>
         <h2>課程管理</h2>
-        <button className="btn btn-primary" onClick={onCreate}>+ 新增課程</button>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          {msg && <span style={{color: msg.startsWith('⚠') ? '#D97757' : msg.startsWith('✓') ? '#7B9E6E' : 'var(--text-mute)', fontSize:12}}>{msg}</span>}
+          <button className="btn btn-primary" onClick={onCreate}>+ 新增課程</button>
+        </div>
       </div>
       {courses.length===0 && <div style={{color:'var(--text-mute)',textAlign:'center',padding:60,border:'1px dashed rgba(var(--gold-rgb),0.15)'}}>尚未建立任何課程。點擊「新增課程」開始。</div>}
       {courses.map(c => {
@@ -910,15 +913,40 @@ function Admin() {
   const [courses, setCourses] = useState([]);
   const [works, setWorks] = useState([]);
   const [editing, setEditing] = useState(null);
+  const [msg, setMsg] = useState('');
 
   useEffect(() => {
     setCourses(PP.getCourses());
     setWorks(PP.getWorks());
   }, []);
 
+  // Stale-while-revalidate: localStorage rendered first, Sheet overlay on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const sheetCourses = await PP.api.getAllCourses();
+        if (cancelled || !Array.isArray(sheetCourses)) return;
+        // Normalize Sheet-side schema gaps (missing ingredients/slots/bases etc.)
+        const normalized = sheetCourses.map(PP.normalizeCourse).filter(Boolean);
+        setCourses(normalized);
+        // Sync localStorage cache so other pages (formula/reserve) see fresh data
+        try { localStorage.setItem(PP.KEYS.COURSES, JSON.stringify(normalized)); } catch {}
+      } catch (e) {
+        console.warn('Courses: Sheet load failed, using localStorage cache:', e?.message || e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const flashMsg = (text, ms = 4000) => {
+    setMsg(text);
+    setTimeout(() => setMsg(''), ms);
+  };
+
   const refresh = () => { setCourses(PP.getCourses()); setWorks(PP.getWorks()); };
 
-  const handleSave = (c) => {
+  const handleSave = async (c) => {
     // === Fix 11 validation ===
     if (c.bookable) {
       if (!c.slots || c.slots.length === 0) {
@@ -931,20 +959,52 @@ function Admin() {
       }
     }
     // === end validation ===
+    const isUpdate = editing !== null;
+    // 1. localStorage first (synchronous, optimistic)
     PP.saveCourse(c);
     refresh();
     setEditing(null);
     setView('courses');
+    // 2. Sheet sync (best-effort)
+    setMsg('同步中…');
+    try {
+      if (isUpdate) await PP.api.updateCourse(c.id, c);
+      else          await PP.api.addCourse(c);
+      flashMsg('✓ 已儲存(雲端已同步)');
+    } catch (e) {
+      console.warn('Courses: ' + (isUpdate ? 'updateCourse' : 'addCourse') + ' Sheet sync failed:', e?.message || e);
+      flashMsg('⚠ 已儲存本機(雲端同步失敗,稍後再試)');
+    }
   };
-  const handleCopy = (c) => {
+  const handleCopy = async (c) => {
     const copy = { ...c, id: PP.genId(), token: PP.genToken(), name: c.name + '（複製）', createdAt: new Date().toISOString() };
+    // 1. localStorage first
     PP.saveCourse(copy);
     refresh();
+    // 2. Sheet sync
+    setMsg('同步中…');
+    try {
+      await PP.api.addCourse(copy);
+      flashMsg('✓ 已複製(雲端已同步)');
+    } catch (e) {
+      console.warn('Courses: addCourse (copy) Sheet sync failed:', e?.message || e);
+      flashMsg('⚠ 已複製本機(雲端同步失敗,稍後再試)');
+    }
   };
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!confirm('確定要刪除此課程？相關作品不會被刪除。')) return;
+    // 1. localStorage first
     PP.deleteCourse(id);
     refresh();
+    // 2. Sheet sync
+    setMsg('同步中…');
+    try {
+      await PP.api.deleteCourse(id);
+      flashMsg('✓ 已刪除(雲端已同步)');
+    } catch (e) {
+      console.warn('Courses: deleteCourse Sheet sync failed:', e?.message || e);
+      flashMsg('⚠ 已刪除本機(雲端同步失敗,稍後再試)');
+    }
   };
 
   if (!authed) return <Login onLogin={()=>setAuthed(true)} />;
@@ -1028,7 +1088,7 @@ function Admin() {
       <div style={{flex:1,padding:'36px 40px 36px',overflowY:'auto',position:'relative'}}>
         <div style={{paddingTop:24}}>
         {view==='courses' && !editing && (
-          <CourseList courses={courses} works={works}
+          <CourseList courses={courses} works={works} msg={msg}
             onCreate={()=>{setEditing(null);setView('editor')}}
             onEdit={c=>{setEditing(c);setView('editor')}}
             onCopy={handleCopy}

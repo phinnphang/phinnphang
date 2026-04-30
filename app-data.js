@@ -66,6 +66,26 @@ const PP = (() => {
   function getCourses()       { return load(KEYS.COURSES, []); }
   function getWorks()         { return load(KEYS.WORKS, []); }
 
+  // Schema-normalize a course object (esp. from Sheet round-trip where
+  // empty cells may yield undefined / null / '' instead of expected []/false).
+  // Callers reading from external sources (Sheet) should pipe through this
+  // before setState so downstream UI (.length, .map) is safe.
+  function normalizeCourse(c) {
+    if (!c || typeof c !== 'object') return null;
+    return {
+      ...c,
+      ingredients: Array.isArray(c.ingredients) ? c.ingredients : [],
+      bases:       Array.isArray(c.bases)       ? c.bases       : [],
+      slots:       Array.isArray(c.slots)       ? c.slots       : [],
+      bookable:    !!c.bookable,
+      hasBase:     !!c.hasBase,
+      capacity:    Number(c.capacity) || 6,
+      name:        c.name || '',
+      type:        c.type || '',
+      token:       c.token || '',
+    };
+  }
+
   function saveCourse(course) {
     const list = getCourses();
     const idx  = list.findIndex(c => c.id === course.id);
@@ -292,7 +312,7 @@ const PP = (() => {
   return {
     FAMILIES, KEYS, DEFAULT_SETTINGS, RESERVATION_STATUSES,
     getSettings, saveSettings,
-    getCourses, saveCourse, deleteCourse, getCourseById,
+    getCourses, saveCourse, deleteCourse, getCourseById, normalizeCourse,
     getWorks, saveWork,
     getBookableCourses, getPublishedWorks,
     getDemoWorks() {
