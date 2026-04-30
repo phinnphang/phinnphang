@@ -56,6 +56,8 @@
 
     // Writes
     addCourse(data)           { return post('addCourse',      { data }); },
+    updateCourse(id, data)    { return post('updateCourse',   { id, data }); },
+    deleteCourse(id)          { return post('deleteCourse',   { id }); },
     addReservation(data)      { return post('addReservation', { data }); },
     addWork(data)             { return post('addWork',        { data }); },
     updateSetting(key, value) { return post('updateSetting',  { key, value }); },
