@@ -744,6 +744,24 @@ function SettingsPage({ onSaved }) {
   const [pwNew, setPwNew] = useState('');
   const [msg, setMsg] = useState('');
 
+  // Stale-while-revalidate: localStorage rendered first, Sheet overlay on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const sheetSettings = await PP.api.getAllSettings();
+        if (cancelled || !sheetSettings || typeof sheetSettings !== 'object') return;
+        setS(prev => ({ ...prev, ...sheetSettings }));
+      } catch (e) {
+        console.warn('Settings: Sheet load failed, using localStorage cache:', e?.message || e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Sheet sync whitelist — explicit opt-in. Add keys here as backend Sheet rows are created.
+  const SHEET_SYNC_KEYS = ['adminEmails', 'themeDefault', 'courseTypes'];
+
   const save = async () => {
     const next = { ...s };
     if (pwNew.trim()) {
@@ -751,11 +769,29 @@ function SettingsPage({ onSaved }) {
     }
     // Sync legacy adminEmail = primary (first of adminEmails) for backward compat
     next.adminEmail = (Array.isArray(next.adminEmails) && next.adminEmails[0]) || '';
+    // 1. localStorage first (synchronous, optimistic)
     PP.saveSettings(next);
     setS(next);
     setPwNew('');
-    setMsg('已儲存');
-    setTimeout(()=>setMsg(''),2500);
+    // 2. Sheet sync (parallel, best-effort) — whitelist only
+    const keysToSync = SHEET_SYNC_KEYS.filter(k => k in next);
+    if (keysToSync.length === 0) {
+      setMsg('✓ 已儲存');
+      setTimeout(() => setMsg(''), 2500);
+      return;
+    }
+    setMsg('同步中…');
+    const results = await Promise.allSettled(
+      keysToSync.map(key => PP.api.updateSetting(key, next[key]))
+    );
+    const failed = results.filter(r => r.status === 'rejected');
+    if (failed.length === 0) {
+      setMsg('✓ 已儲存(雲端已同步)');
+    } else {
+      console.warn('Settings sync: ' + failed.length + '/' + keysToSync.length + ' key(s) failed', failed.map(f => f.reason?.message));
+      setMsg('⚠ 已儲存本機(雲端同步失敗,稍後再試)');
+    }
+    setTimeout(() => setMsg(''), 4000);
   };
   const addType = () => { if(!newType.trim()) return; setS(p=>({...p,courseTypes:[...p.courseTypes,newType.trim()]})); setNewType(''); };
   const removeType = (t) => setS(p=>({...p,courseTypes:p.courseTypes.filter(x=>x!==t)}));
@@ -779,7 +815,7 @@ function SettingsPage({ onSaved }) {
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:28}}>
         <h2>系統設定</h2>
         <div style={{display:'flex',gap:8,alignItems:'center'}}>
-          {msg && <span style={{color:'#7B9E6E',fontSize:12}}>{msg}</span>}
+          {msg && <span style={{color: msg.startsWith('⚠') ? '#D97757' : msg.startsWith('✓') ? '#7B9E6E' : 'var(--text-mute)', fontSize:12}}>{msg}</span>}
           <button className="btn btn-primary" onClick={save}>儲存設定</button>
         </div>
       </div>
