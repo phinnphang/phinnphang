@@ -86,6 +86,27 @@ const PP = (() => {
     };
   }
 
+  // Schema-normalize a reservation object (Sheet round-trip safe).
+  // people may come back as string "2"; status must default to 'pending'.
+  function normalizeReservation(r) {
+    if (!r || typeof r !== 'object') return null;
+    return {
+      ...r,
+      id:         r.id || '',
+      courseId:   r.courseId || '',
+      courseName: r.courseName || '',
+      slotId:     r.slotId || '',
+      name:       r.name || '',
+      email:      r.email || '',
+      people:     Number(r.people) || 1,
+      date:       r.date || '',
+      time:       r.time || '',
+      note:       r.note || '',
+      status:     r.status || 'pending',
+      createdAt:  r.createdAt || '',
+    };
+  }
+
   function saveCourse(course) {
     const list = getCourses();
     const idx  = list.findIndex(c => c.id === course.id);
@@ -343,7 +364,7 @@ const PP = (() => {
           ], price:1180, vol:15, isDemo:true },
       ];
     },
-    getReservations, saveReservation, deleteReservation,
+    getReservations, saveReservation, deleteReservation, normalizeReservation,
     getCourseByToken, getWorkById,
     genId, genToken,
     computeRadar,

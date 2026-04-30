@@ -55,11 +55,13 @@
     getAllSettings()     { return get('getAllSettings'); },
 
     // Writes
-    addCourse(data)           { return post('addCourse',      { data }); },
-    updateCourse(id, data)    { return post('updateCourse',   { id, data }); },
-    deleteCourse(id)          { return post('deleteCourse',   { id }); },
-    addReservation(data)      { return post('addReservation', { data }); },
-    addWork(data)             { return post('addWork',        { data }); },
-    updateSetting(key, value) { return post('updateSetting',  { key, value }); },
+    addCourse(data)             { return post('addCourse',         { data }); },
+    updateCourse(id, data)      { return post('updateCourse',      { id, data }); },
+    deleteCourse(id)            { return post('deleteCourse',      { id }); },
+    addReservation(data)        { return post('addReservation',    { data }); },
+    updateReservation(id, data) { return post('updateReservation', { id, data }); },
+    deleteReservation(id)       { return post('deleteReservation', { id }); },
+    addWork(data)               { return post('addWork',           { data }); },
+    updateSetting(key, value)   { return post('updateSetting',     { key, value }); },
   };
 })();
